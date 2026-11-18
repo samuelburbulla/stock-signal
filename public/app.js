@@ -1,5 +1,5 @@
 /**
- * Stock Signal — Frontend Screener, Signal Renderer & Deep-Dive Valuation Inspector
+ * Stock Signal — Frontend Screener, Reasonable Price Range Renderer & Deep-Dive Valuation Inspector
  */
 (function () {
   "use strict";
@@ -35,6 +35,15 @@
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
+  }
+
+  function fmtRangePrice(val, sym = "$") {
+    if (val === null || val === undefined || Number.isNaN(val)) return "–";
+    const n = Number(val);
+    if (n >= 50) {
+      return `${sym}${Math.round(n).toLocaleString("en-US")}`;
+    }
+    return `${sym}${n.toFixed(2)}`;
   }
 
   function fmtMult(val) {
@@ -160,6 +169,37 @@
     return `<span class="dip-pill dip-${esc(dk)}" title="${esc(rsn)}">${esc(lbl)}</span>`;
   }
 
+  function renderPriceRangeCell(s) {
+    const cur = s.currencySymbol || "$";
+    if (s.cheapPrice == null || s.fairPrice == null || s.expensivePrice == null) {
+      return `<span class="val-muted">–</span>`;
+    }
+    const zone = s.valuationZone || "fair";
+    const vs = Number(s.vsFairPct || 0);
+    const vsTxt = `${vs > 0 ? "+" : ""}${Math.round(vs)}%`;
+    const zoneLbl = zone === "cheap" ? `Cheap (${vsTxt})` : zone === "expensive" ? `Expensive (${vsTxt})` : `Fair (${vsTxt})`;
+    const pos = Math.max(3, Math.min(97, Number(s.rangePosValuation ?? 50)));
+    const tip = `${s.rangeBasis || ""} · Cheap ≤ ${fmtRangePrice(s.cheapPrice, cur)} · Fair ~${fmtRangePrice(s.fairPrice, cur)} · Expensive ≥ ${fmtRangePrice(s.expensivePrice, cur)}`;
+
+    return `<div class="price-range-cell" title="${esc(tip)}">
+      <div class="price-range-top tabular">
+        <span><b class="val-good">&le;${fmtRangePrice(s.cheapPrice, cur)}</b> <span class="val-muted">&ndash;</span> <b class="val-bad">&ge;${fmtRangePrice(s.expensivePrice, cur)}</b></span>
+        <span class="zone-pill zone-${esc(zone)}">${esc(zoneLbl)}</span>
+      </div>
+      <div class="val-zone-bar">
+        <span class="val-zone-seg seg-cheap"></span>
+        <span class="val-zone-seg seg-fair"></span>
+        <span class="val-zone-seg seg-exp"></span>
+        <span class="val-zone-fair-tick"></span>
+        <span class="val-zone-dot dot-${esc(zone)}" style="left:${pos}%"></span>
+      </div>
+      <div class="price-range-sub tabular">
+        <span>Fair ~${fmtRangePrice(s.fairPrice, cur)}</span>
+        ${s.shockAlert && s.shockAlert.active ? `<span class="val-bad">shock haircut</span>` : ""}
+      </div>
+    </div>`;
+  }
+
   // --- Filtering & Sorting ---
   function getFilteredStocks() {
     const all = state.payload.stocks || [];
@@ -178,18 +218,18 @@
       if (state.preset === "top_buys" && !(s.verdictKey === "strong_buy" || s.verdictKey === "buy")) {
         return false;
       }
-      if (state.preset === "bargain_growth" && !(s.pegRatio !== null && s.pegRatio > 0 && s.pegRatio <= 1.05)) {
+      if (state.preset === "cheap_zone" && s.valuationZone !== "cheap") {
         return false;
       }
-      if (state.preset === "oversold_dips" && !(s.dipKey === "prime_dip" || s.dipKey === "pullback")) {
+      if (state.preset === "oversold_dips" && !((s.dipKey === "prime_dip" || s.dipKey === "pullback") && !s.isFallingKnife)) {
         return false;
       }
-      if (state.preset === "cash_cows" && !(s.fcfYield !== null && s.fcfYield >= 3.5)) {
+      if (state.preset === "knives_and_expensive" && !(s.isFallingKnife || s.valuationZone === "expensive" || s.verdictKey === "avoid")) {
         return false;
       }
       if (q) {
         if (aliasSym && s.symbol === aliasSym) return true;
-        const hay = `${s.symbol} ${s.name} ${s.longName || ""} ${s.sector || ""} ${s.industry || ""} ${s.dipLabel || ""}`.toLowerCase();
+        const hay = `${s.symbol} ${s.name} ${s.longName || ""} ${s.sector || ""} ${s.industry || ""} ${s.dipLabel || ""} ${s.valuationZoneLabel || ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -260,7 +300,6 @@
       updatedEl.textContent = `Daily Auto-Updated · Last synced ${formatted} (${counts.total} stocks)`;
     }
 
-    // Populate sector dropdown dynamically
     const sectorSelect = document.getElementById("sector-filter-select");
     const currentSector = state.sectorFilter;
     const sectors = Array.from(new Set(stocks.map((s) => s.sector).filter(Boolean))).sort();
@@ -273,7 +312,6 @@
         )
         .join("");
 
-    // Bucket active states
     document.querySelectorAll(".signal-bucket").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.verdict === state.verdictFilter);
     });
@@ -313,7 +351,6 @@
     tableCard.classList.toggle("hidden", state.viewMode !== "table");
     cardsGrid.classList.toggle("active", state.viewMode === "cards");
 
-    // Update sort indicators on headers
     document.querySelectorAll("#stock-table thead th.sortable").forEach((th) => {
       const key = th.dataset.sort;
       const baseLabel = th.textContent.replace(/[ ↑↓]+$/, "");
@@ -327,7 +364,7 @@
     });
 
     if (stocks.length === 0) {
-      const emptyHtml = `<div class="empty-state">No stocks match this filter. Try clicking <b>All Tracked</b> or adding a new ticker above.</div>`;
+      const emptyHtml = `<div class="empty-state">No stocks match this filter. Try clicking <b>All Tracked</b> or clearing the search box above.</div>`;
       tbody.innerHTML = `<tr><td colspan="12">${emptyHtml}</td></tr>`;
       cardsGrid.innerHTML = emptyHtml;
       return;
@@ -363,6 +400,7 @@
             <strong>${fmtPrice(s.price, cur)}</strong>
             <span class="sub-val ${chgCls}">${fmtPct(s.changePct, true, 2)}</span>
           </td>
+          <td>${renderPriceRangeCell(s)}</td>
           <td class="num tabular">
             <span class="${clsForwardPE(s.forwardPE, s.sector)}">${fmtMult(s.forwardPE)}</span>
             <span class="sub-val">TTM ${fmtMult(s.trailingPE)}</span>
@@ -386,10 +424,6 @@
                 ? ` · ${fmtPct(s.dip20dPct, true, 0)} 20d`
                 : ""
             }</span>
-          </td>
-          <td class="num tabular">
-            <span class="${clsUpside(s.targetUpsidePct)}">${fmtPct(s.targetUpsidePct, true, 0)}</span>
-            <span class="sub-val">Target ${fmtPrice(s.targetMeanPrice, cur)}</span>
           </td>
           <td class="num">
             <div class="range-wrap" title="52W Low ${fmtPrice(s.low52w, cur)} — High ${fmtPrice(s.high52w, cur)}">
@@ -421,6 +455,9 @@
             </div>
           </div>
           <div class="card-summary">${esc(s.summary)}</div>
+          <div class="card-range-box">
+            ${renderPriceRangeCell(s)}
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               ${renderPillarChips(s.pillars)}
@@ -434,16 +471,16 @@
               <div class="card-metric-val">${fmtPrice(s.price, cur)}</div>
             </div>
             <div>
+              <div class="card-metric-lbl">Fair Value</div>
+              <div class="card-metric-val">${fmtRangePrice(s.fairPrice, cur)}</div>
+            </div>
+            <div>
               <div class="card-metric-lbl">Fwd P/E</div>
               <div class="card-metric-val ${clsForwardPE(s.forwardPE, s.sector)}">${fmtMult(s.forwardPE)}</div>
             </div>
             <div>
               <div class="card-metric-lbl">PEG</div>
               <div class="card-metric-val ${clsPeg(s.pegRatio)}">${fmtPeg(s.pegRatio)}</div>
-            </div>
-            <div>
-              <div class="card-metric-lbl">Upside</div>
-              <div class="card-metric-val ${clsUpside(s.targetUpsidePct)}">${fmtPct(s.targetUpsidePct, true, 0)}</div>
             </div>
           </div>
         </article>`;
@@ -501,7 +538,6 @@
     function paint(hoverIdx = null) {
       ctx.clearRect(0, 0, width, height);
 
-      // Horizontal grid lines + price axis labels
       ctx.strokeStyle = borderCol;
       ctx.lineWidth = 1;
       ctx.fillStyle = textMuted;
@@ -517,7 +553,6 @@
         ctx.fillText(`${stock.currencySymbol || "$"}${val.toFixed(0)}`, padL + plotW + 6, y + 3);
       }
 
-      // Date labels
       ctx.textAlign = "left";
       ctx.fillText(pts[0].d.slice(0, 7), padL, height - 5);
       ctx.textAlign = "center";
@@ -525,7 +560,6 @@
       ctx.textAlign = "right";
       ctx.fillText(pts[pts.length - 1].d.slice(5), padL + plotW, height - 5);
 
-      // 200d SMA dashed line
       ctx.save();
       ctx.setLineDash([4, 4]);
       ctx.strokeStyle = holdCol;
@@ -544,7 +578,6 @@
       ctx.stroke();
       ctx.restore();
 
-      // 50d SMA subtle line
       ctx.save();
       ctx.strokeStyle = goodCol;
       ctx.globalAlpha = 0.7;
@@ -563,7 +596,6 @@
       ctx.stroke();
       ctx.restore();
 
-      // Main Close Line + subtle gradient fill
       const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
       grad.addColorStop(0, "rgba(20, 128, 150, 0.18)");
       grad.addColorStop(1, "rgba(20, 128, 150, 0.0)");
@@ -583,7 +615,6 @@
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // Hover Crosshair
       if (hoverIdx !== null && pts[hoverIdx]) {
         const hp = pts[hoverIdx];
         const hx = xOf(hoverIdx);
@@ -668,6 +699,27 @@
       })
       .join("");
 
+    const shock = stock.shockAlert && stock.shockAlert.active ? stock.shockAlert : null;
+    const shockBannerHtml = shock
+      ? `<div class="shock-alert-box">
+          <div class="shock-alert-head">
+            <strong>${esc(shock.badge || "🚨 Governance / Leadership Shock")}</strong>
+            <span>Buy Signal Capped at Hold / Watch</span>
+          </div>
+          <p>${esc(shock.reason)} — trailing valuation multiples do not yet reflect leadership/probe uncertainty or potential guidance resets.</p>
+          ${
+            Array.isArray(shock.headlines) && shock.headlines.length > 0
+              ? `<ul class="shock-headlines">${shock.headlines.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>`
+              : ""
+          }
+        </div>`
+      : "";
+
+    const zone = stock.valuationZone || "fair";
+    const vsNum = Number(stock.vsFairPct || 0);
+    const vsSigned = `${vsNum > 0 ? "+" : ""}${vsNum.toFixed(1)}% vs. Fair Value`;
+    const pos = Math.max(3, Math.min(97, Number(stock.rangePosValuation ?? 50)));
+
     content.innerHTML = `
       <div class="drawer-header">
         <div class="drawer-title-group">
@@ -687,13 +739,53 @@
         </div>
       </div>
 
+      ${shockBannerHtml}
+
       <p style="margin:14px 0 0;font-size:0.88rem;color:var(--text-secondary);">
         <strong>Bottom Line:</strong> ${esc(stock.summary)}
       </p>
 
-      <div class="dip-callout-box">
+      <div class="drawer-section">
+        <h3>Reasonable Price Range (What Is Cheap vs. Expensive?)</h3>
+        <div class="drawer-range-card">
+          <div class="drawer-range-tiers tabular">
+            <div class="range-tier tier-cheap ${zone === "cheap" ? "active" : ""}">
+              <span class="tier-lbl">🟢 Cheap Zone</span>
+              <strong class="tier-val">&le; ${fmtPrice(stock.cheapPrice, cur)}</strong>
+              <span class="tier-hint">18%+ margin of safety</span>
+            </div>
+            <div class="range-tier tier-fair ${zone === "fair" ? "active" : ""}">
+              <span class="tier-lbl">⚖ Fair Value</span>
+              <strong class="tier-val">~${fmtPrice(stock.fairPrice, cur)}</strong>
+              <span class="tier-hint">Reasonable intrinsic value</span>
+            </div>
+            <div class="range-tier tier-exp ${zone === "expensive" ? "active" : ""}">
+              <span class="tier-lbl">🔴 Expensive Zone</span>
+              <strong class="tier-val">&ge; ${fmtPrice(stock.expensivePrice, cur)}</strong>
+              <span class="tier-hint">20%+ valuation premium</span>
+            </div>
+          </div>
+
+          <div class="drawer-range-meter">
+            <div class="val-zone-bar large">
+              <span class="val-zone-seg seg-cheap"></span>
+              <span class="val-zone-seg seg-fair"></span>
+              <span class="val-zone-seg seg-exp"></span>
+              <span class="val-zone-fair-tick"></span>
+              <span class="val-zone-dot dot-${esc(zone)}" style="left:${pos}%"></span>
+            </div>
+            <div class="drawer-range-caption tabular">
+              <span>Current: <strong>${fmtPrice(stock.price, cur)}</strong> (<span class="zone-pill zone-${esc(zone)}">${esc(stock.valuationZoneLabel || "Fair")} · ${esc(vsSigned)}</span>)</span>
+            </div>
+          </div>
+
+          <div class="drawer-range-basis">${esc(stock.rangeBasis || "")}</div>
+        </div>
+      </div>
+
+      <div class="dip-callout-box ${stock.isFallingKnife ? "knife-callout" : ""}">
         <div class="dip-callout-head">
-          <span style="font-size:0.82rem;font-weight:700;color:var(--text-primary);">Daily Dip Signal — Is Today a Good Day to Buy?</span>
+          <span style="font-size:0.82rem;font-weight:700;color:var(--text-primary);">Dip vs. Falling-Knife Check — Is Today a Good Entry?</span>
           ${renderDipBadge(stock)}
         </div>
         <p style="margin:0 0 8px;font-size:0.81rem;color:var(--text-secondary);line-height:1.45;">
@@ -701,9 +793,9 @@
         </p>
         <div class="dip-callout-stats">
           <span>14d RSI: <strong>${stock.rsi14 !== null && stock.rsi14 !== undefined ? stock.rsi14.toFixed(1) : "–"}</strong></span>
-          <span>5d Fast RSI: <strong>${stock.rsi5 !== null && stock.rsi5 !== undefined ? stock.rsi5.toFixed(1) : "–"}</strong></span>
-          <span>20d High Pullback: <strong>${fmtPct(stock.dip20dPct, true, 1)}</strong></span>
-          <span>5d Change: <strong>${fmtPct(stock.ret5dPct, true, 1)}</strong></span>
+          <span>20d High Drop: <strong>${fmtPct(stock.dip20dPct, true, 1)}</strong></span>
+          <span>vs. 50d MA: <strong>${fmtPct(stock.distFrom50dPct, true, 1)}</strong></span>
+          <span>vs. 200d MA: <strong>${fmtPct(stock.distFrom200dPct, true, 1)}</strong></span>
         </div>
       </div>
 
@@ -742,7 +834,7 @@
       </div>
 
       <div class="drawer-section">
-        <h3>Valuation Multiples (Is It Cheap?)</h3>
+        <h3>Valuation Multiples &amp; Consensus</h3>
         <div class="metrics-grid">
           <div class="metric-tile">
             <div class="metric-tile-name">Forward P/E</div>
@@ -770,9 +862,9 @@
             <div class="metric-tile-hint">Enterprise multiple (&lt;14x low)</div>
           </div>
           <div class="metric-tile">
-            <div class="metric-tile-name">Price / Sales &amp; Book</div>
-            <div class="metric-tile-val">${fmtMult(stock.priceToSales)} <span style="font-size:0.78rem;font-weight:500;color:var(--text-muted)">/ ${fmtMult(stock.priceToBook)}</span></div>
-            <div class="metric-tile-hint">P/S and P/B ratios</div>
+            <div class="metric-tile-name">Wall St. Target</div>
+            <div class="metric-tile-val ${clsUpside(stock.targetUpsidePct)}">${fmtPrice(stock.targetMeanPrice, cur)} (${fmtPct(stock.targetUpsidePct, true, 0)})</div>
+            <div class="metric-tile-hint">${stock.analystCount || 0} analysts (${fmtRangePrice(stock.targetLowPrice, cur)}–${fmtRangePrice(stock.targetHighPrice, cur)})</div>
           </div>
         </div>
       </div>
@@ -808,28 +900,7 @@
           <div class="metric-tile">
             <div class="metric-tile-name">Dividend Yield</div>
             <div class="metric-tile-val">${fmtPct(stock.dividendYield, false, 2)}</div>
-            <div class="metric-tile-hint">Annual cash dividend</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="drawer-section">
-        <h3>Entry Timing &amp; Wall Street Targets</h3>
-        <div class="metrics-grid">
-          <div class="metric-tile">
-            <div class="metric-tile-name">14-Day RSI</div>
-            <div class="metric-tile-val ${clsRsi(stock.rsi14)}">${stock.rsi14 !== null ? stock.rsi14.toFixed(1) : "–"}</div>
-            <div class="metric-tile-hint">${rsiTag(stock.rsi14)} (&lt;37 dip, &gt;70 hot)</div>
-          </div>
-          <div class="metric-tile">
-            <div class="metric-tile-name">From 52-Week High</div>
-            <div class="metric-tile-val">${fmtPct(stock.drawdownFrom52wHighPct, true)}</div>
-            <div class="metric-tile-hint">${fmtPrice(stock.low52w, cur)} – ${fmtPrice(stock.high52w, cur)}</div>
-          </div>
-          <div class="metric-tile">
-            <div class="metric-tile-name">Consensus Target</div>
-            <div class="metric-tile-val ${clsUpside(stock.targetUpsidePct)}">${fmtPrice(stock.targetMeanPrice, cur)} (${fmtPct(stock.targetUpsidePct, true, 0)})</div>
-            <div class="metric-tile-hint">${stock.analystCount || 0} analysts (${fmtPrice(stock.targetLowPrice, cur)}–${fmtPrice(stock.targetHighPrice, cur)})</div>
+            <div class="metric-tile-hint">52W ${fmtRangePrice(stock.low52w, cur)} – ${fmtRangePrice(stock.high52w, cur)}</div>
           </div>
         </div>
       </div>
@@ -876,11 +947,10 @@
       state.hasLiveBackend = false;
     }
 
-    // Static hosting (GitHub Pages): adapt quick-lookup button & pull cache-busted daily JSON
     const addInput = document.getElementById("add-ticker-input");
     const addBtn = document.getElementById("add-ticker-btn");
     if (addInput && addBtn) {
-      addInput.placeholder = "Jump to ticker (ANT, SPX, NVDA)";
+      addInput.placeholder = "Jump to ticker (NVDA, ANT, SPY)";
       addBtn.textContent = "Inspect";
     }
     try {
@@ -913,7 +983,7 @@
         if (state.selectedSymbol) openDrawer(state.selectedSymbol);
         const ts = data.updatedAt ? new Date(data.updatedAt).toLocaleString() : "today";
         showBanner(
-          `Synced latest GitHub Pages snapshot (${data.stocks.length} stocks · updated ${ts}). Auto-updates twice every trading day via GitHub Actions.`,
+          `Synced latest GitHub Pages snapshot (${data.stocks.length} stocks · updated ${ts}). Auto-updates twice every trading day.`,
           false,
           5500
         );
@@ -926,7 +996,7 @@
       return;
     }
 
-    showBanner("Fetching live quotes, 1Y RSI/moving averages, and valuation multiples…", false, 0);
+    showBanner("Fetching live quotes, price ranges, and corporate-shock headlines…", false, 0);
     try {
       const resp = await fetch("./api/refresh", { method: "POST" });
       const data = await resp.json();
@@ -934,7 +1004,7 @@
       state.payload = data;
       renderAll();
       if (state.selectedSymbol) openDrawer(state.selectedSymbol);
-      showBanner(`Updated ${data.stocks.length} stocks with live market data.`, false, 4000);
+      showBanner(`Updated ${data.stocks.length} stocks with live market data and shock checks.`, false, 4000);
     } catch (err) {
       showBanner(`Live refresh unavailable (${err.message}). Showing latest daily snapshot.`, true, 6000);
     } finally {
@@ -950,7 +1020,6 @@
     const btn = document.getElementById("add-ticker-btn");
     const input = document.getElementById("add-ticker-input");
 
-    // Check if already in current dataset first (instant on GitHub Pages!)
     const existing = (state.payload.stocks || []).find(
       (s) =>
         s.symbol === ticker ||
@@ -1037,7 +1106,6 @@
 
   // --- Event Listeners & Init ---
   function bindEvents() {
-    // Theme initialization & toggle
     const savedTheme = localStorage.getItem("stock-signal-theme") || "light";
     document.documentElement.setAttribute("data-theme", savedTheme);
     const themeBtn = document.getElementById("theme-toggle-btn");
@@ -1054,7 +1122,6 @@
       }
     });
 
-    // Guide bar toggle
     const guideBtn = document.getElementById("guide-toggle-btn");
     const guideBar = document.getElementById("guide-bar");
     guideBtn.addEventListener("click", () => {
@@ -1062,12 +1129,10 @@
       guideBtn.setAttribute("aria-expanded", String(open));
     });
 
-    // Banner dismiss
     document.getElementById("status-banner-close").addEventListener("click", () => {
       document.getElementById("status-banner").classList.remove("visible");
     });
 
-    // Verdict buckets
     document.querySelectorAll(".signal-bucket").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.verdictFilter = btn.dataset.verdict || "all";
@@ -1075,7 +1140,6 @@
       });
     });
 
-    // Preset pills
     document.querySelectorAll("#preset-pills .pill").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.preset = btn.dataset.preset || "all";
@@ -1084,7 +1148,6 @@
       });
     });
 
-    // Search & Sector
     document.getElementById("filter-search-input").addEventListener("input", (e) => {
       state.searchQuery = e.target.value;
       renderList();
@@ -1095,7 +1158,6 @@
       renderList();
     });
 
-    // View mode toggle
     const tblBtn = document.getElementById("view-table-btn");
     const crdBtn = document.getElementById("view-cards-btn");
     tblBtn.addEventListener("click", () => {
@@ -1111,7 +1173,6 @@
       renderList();
     });
 
-    // Column sorting
     document.querySelectorAll("#stock-table thead th.sortable").forEach((th) => {
       th.addEventListener("click", () => {
         const key = th.dataset.sort;
@@ -1119,15 +1180,13 @@
           state.sortDir = state.sortDir === "desc" ? "asc" : "desc";
         } else {
           state.sortKey = key;
-          // Lower is better for valuation multiples and RSI; higher is better for scores/yields/growth
-          const ascDefault = ["symbol", "forwardPE", "pegRatio", "rsi14"].includes(key);
+          const ascDefault = ["symbol", "vsFairPct", "forwardPE", "pegRatio", "rsi14"].includes(key);
           state.sortDir = ascDefault ? "asc" : "desc";
         }
         renderList();
       });
     });
 
-    // Row & Card clicks -> open deep-dive drawer
     document.getElementById("stock-table-body").addEventListener("click", (e) => {
       const tr = e.target.closest("tr[data-symbol]");
       if (tr) openDrawer(tr.dataset.symbol);
@@ -1142,7 +1201,6 @@
       if (e.key === "Escape" && state.selectedSymbol) closeDrawer();
     });
 
-    // Live actions
     document.getElementById("refresh-live-btn").addEventListener("click", refreshLiveNow);
     document.getElementById("add-ticker-form").addEventListener("submit", (e) => {
       e.preventDefault();

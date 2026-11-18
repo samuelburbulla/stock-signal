@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
 """
-Daily Stock Valuation & Buy-Signal Engine.
+Daily Stock Valuation, Reasonable Price Range & Falling-Knife Engine.
 
-Fetches live prices, 1-year daily OHLCV technicals, and fundamental valuation metrics
-from Yahoo Finance (no API key required), computes multi-factor Buy Scores (0-100),
-traffic-light indicators, and plain-English takeaways, and writes `public/data/stocks.json`.
+Fetches live prices, 1-year daily OHLCV technicals, fundamental valuation metrics,
+and per-ticker corporate/governance news RSS feeds (no API key required). Computes:
+  1. Per-stock Reasonable Price Range (`Cheap` · `Fair` · `Expensive`)
+  2. Live Corporate/Leadership Shock & Technical Falling-Knife guardrails (`🚨`)
+  3. Multi-factor Buy Scores (1-99), traffic-light indicators, and plain-English takeaways
 
-Can be run:
-  1. Automatically by `server.py` on a daily schedule (and on-demand via /api/refresh)
-  2. Via cron or GitHub Actions (`.github/workflows/daily-update.yml`)
-  3. Directly from CLI: `python3 scripts/update_data.py`
+Writes `public/data/stocks.json` and `public/data/stocks_snapshot.js`.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import email.utils
 import http.cookiejar
 import json
 import math
-import os
+import re
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -59,14 +61,38 @@ TICKER_ALIASES: dict[str, str] = {
     "SPACEX": "SPCX",
 }
 
+CYCLICAL_MEMORY_SYMS = {"MU", "WDC", "STX"}
+
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/128.0.0.0 Safari/537.36"
 )
 
+CORP_SUFFIX_RE = re.compile(
+    r"(?:,?\s+(?:inc\.?|incorporated|corp\.?|corporation|platforms|holdings|company|co\.?|plc|n\.v\.|s\.e\.|se|a\.g\.|ag|pbc|limited|ltd\.?|group|trust))+$",
+    re.IGNORECASE,
+)
 
-import threading
+EXEC_SHOCK_RE = re.compile(
+    r"(\bceo\b.{0,45}\b(resign\w*|step\w*\s+down|oust\w*|fired|depart\w*|exit\w*|leave\w*|left)\b"
+    r"|\b(resign\w*|step\w*\s+down|oust\w*|depart\w*|exit\w*)\b.{0,45}\b(as\s+ceo|ceo|chief\s+executive|founder)\b"
+    r"|\b(interim\s+ceo|acting\s+ceo|ceo\s+search|ceo\s+exit|ceo\s+departure|ceo\s+ouster|after\s+\w+\s+\w+\s+ouster|life\s+after\s+\w+|without\s+founder)\b"
+    r"|\b(founder|co-founder)\b.{0,45}\b(resign\w*|step\w*\s+down|oust\w*|exit\w*|left)\b)",
+    re.IGNORECASE,
+)
+
+PROBE_SHOCK_RE = re.compile(
+    r"\b(sec\s+(probe\w*|investigat\w*|subpoena\w*|charg\w*)"
+    r"|doj\s+(probe\w*|investigat\w*|subpoena\w*|criminal)"
+    r"|justice\s+department\s+(probe\w*|investigat\w*)"
+    r"|federal\s+(probe\w*|investigat\w*)"
+    r"|board\s+investigat\w*|independent\s+investigat\w*|internal\s+investigat\w*"
+    r"|investigat\w+\s+(?:ceo|founder|chief\s+executive|accounting|disclosur\w*)"
+    r"|accounting\s+(fraud|probe\w*|irregularit\w*|restatement\w*)"
+    r"|restate\w*\s+financial\w*|auditor\s+resign\w*|chapter\s+11|bankruptcy\s+protection)\b",
+    re.IGNORECASE,
+)
 
 
 class YahooClient:
@@ -120,6 +146,10 @@ class YahooClient:
             req = urllib.request.Request(
                 target_url,
                 headers={
+                    "User-Agent", USER_AGENT,
+                }
+                if False
+                else {
                     "User-Agent": USER_AGENT,
                     "Accept": "application/json,text/plain,*/*",
                     "Cookie": self.cookie_header,
@@ -147,7 +177,6 @@ class YahooClient:
             return 1.0
         f_c = from_curr.upper()
         t_c = to_curr.upper()
-        # Handle GBp (British pence) vs GBP
         pence_factor = 1.0
         if from_curr == "GBp" and t_c == "GBP":
             return 0.01
@@ -189,7 +218,7 @@ def _raw(obj: Any, key: str) -> float | None:
 
 
 def compute_rsi(closes: list[float], period: int = 14) -> float | None:
-    """Computes Wilder's smoothed 14-day Relative Strength Index."""
+    """Computes Wilder's smoothed Relative Strength Index."""
     if len(closes) < period + 1:
         return None
     gains: list[float] = []
@@ -254,30 +283,407 @@ def status_from_score(score: float) -> str:
     return "bad"
 
 
-def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
+def _clean_brand_name(disp_name: str, sym: str) -> str:
+    base = disp_name.split("—")[0].split("(")[0].strip()
+    base = CORP_SUFFIX_RE.sub("", base).strip(" ,.-")
+    parts = base.split()
+    return " ".join(parts[:2]) if parts else sym
+
+
+IGNORE_SHOCK_TITLE_RE = re.compile(
+    r"\b(rival\s+ceo|competitor\w*\s+ceo|peer\w*\s+ceo|evolved\s+since|years\s+(?:since|after)|decades\s+after|customer\s+shock)\b",
+    re.IGNORECASE,
+)
+
+OTHER_MEGACAP_NAMES = {
+    "NVDA": ("nvidia", "jensen huang"),
+    "AAPL": ("apple", "tim cook"),
+    "MSFT": ("microsoft", "satya nadella"),
+    "TSLA": ("tesla", "elon musk"),
+    "META": ("meta", "zuckerberg"),
+    "GOOGL": ("alphabet", "google", "sundar pichai"),
+    "AMZN": ("amazon", "andy jassy"),
+    "INTC": ("intel",),
+    "AMD": ("amd", "lisa su"),
+    "AVGO": ("broadcom", "hock tan"),
+}
+
+
+def fetch_news_shock(
+    sym: str,
+    disp_name: str,
+    dip_20d: float | None,
+    dist_50d: float | None,
+    drawdown_52w: float | None,
+    change_pct: float | None,
+) -> dict[str, Any] | None:
     """
-    Transparent 5-Pillar Quantitative Stock Scoring Engine (0-100):
-      1. Valuation (35%): Forward P/E, PEG Ratio, FCF Yield (or P/B for Financials), EV/EBITDA
-      2. Quality & Cash (20%): Profit/Operating Margins, ROE, Net Cash / Debt-to-Equity
-      3. Growth (20%): Revenue Growth + Earnings/Forward EPS Growth
-      4. Upside & Consensus (15%): Margin of safety vs Analyst Target & Fundamental Fair Value
-      5. Entry Timing / Technicals (10%): 14d RSI, 52W Pullback, 200d MA stretch
+    Scans recent per-ticker RSS headlines for material corporate/leadership/regulatory shocks:
+      - CEO / founder sudden resignation, ouster, or interim CEO transition
+      - SEC / DOJ / board independent investigation, accounting restatement, or fraud probe
+    Matches strictly on recent headline titles about `sym` itself (filtering out rival/sector spillover).
     """
-    sector = metrics.get("sector") or "Unknown"
+    if sym in ("SPY", "SPCX", "ANT"):
+        return None
+
+    brand = _clean_brand_name(disp_name, sym)
+    urls = [
+        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={urllib.parse.quote(sym)}&region=US&lang=en-US"
+    ]
+    is_price_stressed = (
+        (dip_20d is not None and dip_20d <= -10.0)
+        or (dist_50d is not None and dist_50d <= -10.0)
+        or (drawdown_52w is not None and drawdown_52w <= -22.0)
+        or (change_pct is not None and change_pct <= -4.5)
+    )
+    if is_price_stressed:
+        q = urllib.parse.quote(f"{sym} {brand} stock when:14d")
+        urls.append(f"https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en")
+
+    now_utc = dt.datetime.now(dt.timezone.utc)
+    titles: list[str] = []
+    for u in urls:
+        try:
+            req = urllib.request.Request(u, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                root = ET.fromstring(resp.read())
+            for it in root.findall(".//item"):
+                pub_txt = (it.findtext("pubDate") or "").strip()
+                if pub_txt:
+                    try:
+                        pub_dt = email.utils.parsedate_to_datetime(pub_txt)
+                        if pub_dt.tzinfo is None:
+                            pub_dt = pub_dt.replace(tzinfo=dt.timezone.utc)
+                        if (now_utc - pub_dt).days > 21:
+                            continue
+                    except Exception:
+                        pass
+                title = (it.findtext("title") or "").strip()
+                if title:
+                    titles.append(title)
+        except Exception:
+            continue
+
+    if not titles:
+        return None
+
+    brand_tok = brand.split()[0].lower() if brand.split() else sym.lower()
+    mention_re = re.compile(
+        rf"\b({re.escape(sym.lower())}|{re.escape(brand_tok)})\b",
+        re.IGNORECASE,
+    )
+    foreign_tokens = [
+        tok
+        for other_sym, toks in OTHER_MEGACAP_NAMES.items()
+        if other_sym != sym
+        for tok in toks
+    ]
+
+    exec_hits: list[str] = []
+    probe_hits: list[str] = []
+    seen_titles: set[str] = set()
+
+    for raw_title in titles:
+        clean_title = re.sub(r"\s+-\s+[^-]+$", "", raw_title).strip()
+        if not mention_re.search(clean_title):
+            continue
+        if IGNORE_SHOCK_TITLE_RE.search(clean_title):
+            continue
+        low_t = clean_title.lower()
+        # Skip spillover articles that attribute the shock to a different named mega-cap/CEO
+        if any(ft in low_t for ft in foreign_tokens):
+            continue
+
+        dedup_key = re.sub(r"\W+", " ", low_t).strip()[:60]
+        if not dedup_key or dedup_key in seen_titles:
+            continue
+
+        matched_exec = bool(EXEC_SHOCK_RE.search(clean_title))
+        matched_probe = bool(PROBE_SHOCK_RE.search(clean_title))
+        if matched_exec or matched_probe:
+            seen_titles.add(dedup_key)
+            if matched_exec:
+                exec_hits.append(clean_title)
+            if matched_probe:
+                probe_hits.append(clean_title)
+
+    if len(seen_titles) < 2:
+        return None
+
+    headlines = list(dict.fromkeys(exec_hits + probe_hits))[:3]
+    if exec_hits and probe_hits:
+        return {
+            "active": True,
+            "type": "ceo_and_probe",
+            "badge": "🚨 CEO Exit & Probe",
+            "reason": "Leadership departure & active regulatory/board investigation in recent headlines",
+            "headlines": headlines,
+        }
+    if exec_hits:
+        return {
+            "active": True,
+            "type": "ceo_exit",
+            "badge": "🚨 CEO Exit / Knife" if (dip_20d or 0.0) <= -12.0 else "🚨 CEO Transition",
+            "reason": "Major CEO / founder departure detected in recent company headlines",
+            "headlines": headlines,
+        }
+    return {
+        "active": True,
+        "type": "probe",
+        "badge": "🚨 Probe / Knife" if (dip_20d or 0.0) <= -12.0 else "🚨 Governance Probe",
+        "reason": "Active regulatory, board, or accounting investigation detected in recent headlines",
+        "headlines": headlines,
+    }
+
+
+def compute_price_range(
+    metrics: dict[str, Any],
+    shock_alert: dict[str, Any] | None,
+    is_waterfall: bool,
+) -> dict[str, Any]:
+    """
+    Computes a fundamental Reasonable Price Range (`Cheap` · `Fair` · `Expensive`) for every stock:
+      - `fairPrice`: blended intrinsic value from growth/quality-adjusted Earnings Power,
+        Free Cash Flow Yield (or Price/Book for banks / mid-cycle EPS for memory chips),
+        and a fundamental-capped consensus check (plus an event-risk haircut on shocks/waterfalls).
+      - `cheapPrice`: 18% margin-of-safety discount below Fair Value (`0.82 * fairPrice`)
+      - `expensivePrice`: 20% valuation premium above Fair Value (`1.20 * fairPrice`)
+    """
+    sym = metrics.get("symbol") or ""
+    price = float(metrics.get("price") or 0.0)
+    sector = metrics.get("sector") or "Other"
     industry = metrics.get("industry") or ""
-    is_balance_sheet_fin = (
+    shock_active = bool(shock_alert and shock_alert.get("active"))
+
+    f_pe = metrics.get("forwardPE")
+    t_pe = metrics.get("trailingPE")
+    fcf_yield = metrics.get("fcfYield")
+    pb = metrics.get("priceToBook")
+    ps = metrics.get("priceToSales")
+    rev_growth = metrics.get("revenueGrowth")
+    eps_growth = metrics.get("epsGrowth")
+    net_margin = metrics.get("profitMargin")
+    op_margin = metrics.get("operatingMargin")
+    gross_margin = metrics.get("grossMargin")
+    roe = metrics.get("roe")
+    debt_to_eq = metrics.get("debtToEquity")
+    net_cash_pct = metrics.get("netCashPctMarketCap")
+    target_mean = metrics.get("targetMeanPrice")
+
+    is_financial = (
         sector == "Real Estate"
         or (
             sector == "Financial Services"
-            and (
-                "Bank" in industry
-                or "Insurance" in industry
-                or "Asset Management" in industry
-                or metrics.get("fcfYield") is None
-            )
+            and ("Bank" in industry or "Insurance" in industry)
+            and sym != "BRK-B"
         )
     )
-    is_financial = is_balance_sheet_fin
+    is_memory_cyclical = (
+        sym in CYCLICAL_MEMORY_SYMS
+        or "Memory" in industry
+        or (
+            "Semiconductor" in industry
+            and f_pe is not None
+            and t_pe is not None
+            and 0 < f_pe < 6.0
+            and t_pe > f_pe * 1.8
+        )
+    )
+
+    anchors: list[tuple[float, float]] = []
+    basis_parts: list[str] = []
+
+    if sym == "SPY":
+        eff_pe = f_pe or 20.8
+        fair_pe = 19.5
+        anchors.append((price * (fair_pe / eff_pe), 1.0))
+        basis_parts.append("19.5x historical S&P 500 fair Fwd P/E")
+    elif sym == "ANT":
+        eff_pe = f_pe or 56.16
+        anchors.append((price * (38.0 / eff_pe), 0.60))
+        anchors.append((price * (12.0 / (ps or 17.3)), 0.40))
+        basis_parts.append("38x FY27E earnings & 12x ARR multiple")
+    elif sym == "SPCX":
+        if f_pe and f_pe > 0:
+            anchors.append((price * (36.0 / f_pe), 0.75))
+        if target_mean and target_mean > 0:
+            anchors.append((min(target_mean, price * 1.25), 0.25))
+        basis_parts.append("36x high-growth aerospace/Starlink Fwd P/E")
+    elif is_memory_cyclical:
+        mid_pe_ref = t_pe if (t_pe and t_pe > 0) else ((f_pe * 2.2) if (f_pe and f_pe > 0) else 12.0)
+        fair_mid_pe = 11.0
+        iv_cyc = price * (fair_mid_pe / mid_pe_ref)
+        anchors.append((iv_cyc, 0.85))
+        if fcf_yield and fcf_yield > 1.0:
+            anchors.append((clamp(price * (fcf_yield / 4.5), iv_cyc * 0.65, iv_cyc * 1.25), 0.15))
+        basis_parts.append("11.0x mid-cycle memory P/E (normalized for HBM cycle peak)")
+    elif is_financial:
+        eff_pe = f_pe if (f_pe and f_pe > 0) else (t_pe if (t_pe and t_pe > 0) else None)
+        roe_ref = roe if roe is not None else 12.0
+        fair_fin_pe = interp(roe_ref, [(6, 9.5), (10, 11.8), (14, 13.8), (18, 15.2), (24, 16.5)])
+        if eps_growth is not None and eps_growth > 10:
+            fair_fin_pe += min(1.2, (eps_growth - 10.0) * 0.08)
+        if eff_pe:
+            anchors.append((price * (fair_fin_pe / eff_pe), 0.65))
+            basis_parts.append(f"{fair_fin_pe:.1f}x ROE-adjusted bank P/E")
+        if pb and pb > 0:
+            fair_pb = clamp(roe_ref / 9.2, 0.85, 2.8)
+            anchors.append((price * (fair_pb / pb), 0.35))
+            basis_parts.append(f"{fair_pb:.1f}x fair P/Book")
+    else:
+        eff_margin = net_margin
+        if op_margin is not None and (eff_margin is None or (op_margin > 15.0 and eff_margin < op_margin * 0.45)):
+            eff_margin = op_margin * 0.78
+
+        rg = clamp(rev_growth if rev_growth is not None else 6.0, -12.0, 42.0)
+        eg_cap = max(rg * 1.6, 8.0) if rg >= 0 else 5.0
+        eg = clamp(eps_growth if eps_growth is not None else rg, -15.0, eg_cap)
+        if rg >= 8.0 and (eff_margin or 0.0) >= 12.0 and eg < rg * 0.6:
+            eg = rg * 0.75
+        sust_g = clamp(0.68 * rg + 0.32 * eg, -8.0, 35.0)
+
+        base_pe = interp(
+            sust_g,
+            [(-8, 10.5), (0, 14.0), (6, 17.5), (12, 21.0), (18, 24.5), (26, 28.0), (35, 31.5)],
+        )
+        qual_adj = 0.0
+        if eff_margin is not None:
+            if eff_margin >= 26.0:
+                qual_adj += 2.2
+            elif eff_margin >= 16.0:
+                qual_adj += 1.0
+            elif eff_margin < 5.0:
+                qual_adj -= 2.2
+        if roe is not None and roe >= 28.0:
+            qual_adj += 0.8
+        if net_cash_pct is not None and net_cash_pct >= 5.0:
+            qual_adj += 0.7
+        elif debt_to_eq is not None and debt_to_eq >= 2.2:
+            qual_adj -= 1.5
+
+        fair_pe = clamp(base_pe + qual_adj, 10.5, 33.0)
+        if sector == "Energy":
+            fair_pe = min(fair_pe, 14.5)
+        elif "Auto" in industry and (eff_margin or 0.0) < 12.0:
+            fair_pe = min(fair_pe, 24.0)
+
+        eff_pe = f_pe if (f_pe and f_pe > 0) else (t_pe if (t_pe and t_pe > 0 and t_pe < 60) else None)
+        if sym == "BRK-B" and t_pe and f_pe and 0 < t_pe < f_pe:
+            eff_pe = 0.50 * f_pe + 0.50 * t_pe
+        # When an active corporate shock hits, consensus forward EPS often lags reality -> blend TTM P/E
+        if shock_active and f_pe and t_pe and 0 < f_pe < t_pe * 0.75 and t_pe < 45:
+            eff_pe = 0.40 * f_pe + 0.60 * t_pe
+
+        iv_pe_val: float | None = None
+        if eff_pe is not None:
+            iv_pe_val = price * (fair_pe / eff_pe)
+            anchors.append((iv_pe_val, 0.74))
+            basis_parts.append(f"{fair_pe:.1f}x growth/quality-adjusted P/E")
+
+        if fcf_yield is not None and fcf_yield > 1.5:
+            fair_fcf_y = interp(sust_g, [(-5, 5.8), (0, 5.0), (8, 4.1), (16, 3.4), (26, 2.8), (35, 2.4)])
+            iv_fcf = price * (fcf_yield / fair_fcf_y)
+            if iv_pe_val is not None:
+                iv_fcf = clamp(iv_fcf, iv_pe_val * 0.60, iv_pe_val * 1.35)
+            anchors.append((iv_fcf, 0.26))
+            basis_parts.append(f"{fair_fcf_y:.1f}% fair FCF yield")
+        elif eff_pe is None and ps and ps > 0:
+            gm_factor = clamp((gross_margin or 35.0) / 50.0, 0.35, 1.30)
+            fair_ps = interp(rg, [(-10, 0.7), (0, 1.3), (10, 2.5), (22, 4.5), (40, 7.5)]) * gm_factor
+            if net_margin is not None and net_margin < -10.0:
+                fair_ps *= 0.65
+            anchors.append((price * (fair_ps / ps), 1.0))
+            basis_parts.append(f"{fair_ps:.1f}x margin-adjusted Price/Sales")
+
+    fund_fair = sum(v * w for v, w in anchors) / sum(w for _, w in anchors) if anchors else price
+
+    if target_mean and target_mean > 0 and sym not in ("SPY", "ANT"):
+        if fund_fair > price:
+            fair_price = 0.55 * fund_fair + 0.45 * clamp(target_mean, price * 0.85, fund_fair * 1.15)
+        else:
+            fair_price = 0.82 * fund_fair + 0.18 * min(target_mean, fund_fair * 1.25)
+    else:
+        fair_price = fund_fair
+
+    # Apply explicit uncertainty haircut for live governance/CEO shocks or violent waterfall breakdowns
+    if shock_active:
+        fair_price *= 0.72
+        basis_parts.append("28% uncertainty haircut for active CEO/governance shock")
+    elif is_waterfall:
+        fair_price *= 0.88
+        basis_parts.append("12% haircut for severe falling-knife breakdown")
+
+    # Smooth upside compression above +18% so undervalued stocks keep distinct, realistic fair targets
+    if fair_price > price * 1.18:
+        fair_price = price * 1.18 + (fair_price - price * 1.18) * 0.45
+    fair_price = clamp(fair_price, price * 0.20, price * 1.62)
+
+    cheap_price = fair_price * 0.82
+    expensive_price = fair_price * 1.20
+
+    vs_fair_pct = ((price / fair_price) - 1.0) * 100.0 if fair_price > 0 else 0.0
+    if price <= cheap_price:
+        zone = "cheap"
+        zone_label = "Cheap"
+    elif price >= expensive_price:
+        zone = "expensive"
+        zone_label = "Expensive"
+    else:
+        zone = "fair"
+        zone_label = "Fair"
+
+    # Piecewise visual position (0..100) where Cheap=[0..28], Fair=[28..72] (50=Fair), Expensive=[72..100]
+    if price <= cheap_price:
+        pos = interp(price, [(cheap_price * 0.72, 4.0), (cheap_price, 28.0)])
+    elif price <= fair_price:
+        pos = interp(price, [(cheap_price, 28.0), (fair_price, 50.0)])
+    elif price <= expensive_price:
+        pos = interp(price, [(fair_price, 50.0), (expensive_price, 72.0)])
+    else:
+        pos = interp(price, [(expensive_price, 72.0), (expensive_price * 1.45, 96.0)])
+
+    return {
+        "cheapPrice": round(cheap_price, 2),
+        "fairPrice": round(fair_price, 2),
+        "expensivePrice": round(expensive_price, 2),
+        "vsFairPct": round(vs_fair_pct, 1),
+        "valuationZone": zone,
+        "valuationZoneLabel": zone_label,
+        "rangePosValuation": round(pos, 1),
+        "rangeBasis": "Anchored to " + " + ".join(basis_parts) if basis_parts else "Quantitative fair-value estimate",
+    }
+
+
+def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
+    """
+    Transparent 5-Pillar Quantitative Stock Scoring Engine (1-99) with
+    Reasonable Price Range alignment + Live Shock & Falling-Knife Guardrails.
+    """
+    sym = metrics.get("symbol") or ""
+    sector = metrics.get("sector") or "Unknown"
+    industry = metrics.get("industry") or ""
+    shock_alert: dict[str, Any] | None = metrics.get("shockAlert")
+    shock_active = bool(shock_alert and shock_alert.get("active"))
+
+    is_financial = (
+        sector == "Real Estate"
+        or (
+            sector == "Financial Services"
+            and ("Bank" in industry or "Insurance" in industry)
+            and sym != "BRK-B"
+        )
+    )
+    is_memory_cyclical = (
+        sym in CYCLICAL_MEMORY_SYMS
+        or "Memory" in industry
+        or (
+            "Semiconductor" in industry
+            and metrics.get("forwardPE") is not None
+            and metrics.get("trailingPE") is not None
+            and 0 < metrics["forwardPE"] < 6.0
+            and metrics["trailingPE"] > metrics["forwardPE"] * 1.8
+        )
+    )
 
     f_pe = metrics.get("forwardPE")
     t_pe = metrics.get("trailingPE")
@@ -285,57 +691,97 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
     fcf_yield = metrics.get("fcfYield")
     ev_ebitda = metrics.get("evToEbitda")
     pb = metrics.get("priceToBook")
-    ps = metrics.get("priceToSales")
 
-    rev_growth = metrics.get("revenueGrowth")  # in %
-    eps_growth = metrics.get("epsGrowth")  # in %
-    op_margin = metrics.get("operatingMargin")  # in %
-    net_margin = metrics.get("profitMargin")  # in %
-    roe = metrics.get("roe")  # in %
-    debt_to_eq = metrics.get("debtToEquity")  # ratio e.g. 0.84
-    net_cash_pct = metrics.get("netCashPctMarketCap")  # in %
+    rev_growth = metrics.get("revenueGrowth")
+    eps_growth = metrics.get("epsGrowth")
+    op_margin = metrics.get("operatingMargin")
+    net_margin = metrics.get("profitMargin")
+    roe = metrics.get("roe")
+    debt_to_eq = metrics.get("debtToEquity")
+    net_cash_pct = metrics.get("netCashPctMarketCap")
 
-    upside_pct = metrics.get("targetUpsidePct")  # in %
-    rec_mean = metrics.get("recommendationMean")  # 1.0 strong buy .. 5.0 sell
+    upside_pct = metrics.get("targetUpsidePct")
+    rec_mean = metrics.get("recommendationMean")
     rsi = metrics.get("rsi14")
-    dist_200d = metrics.get("distFrom200dPct")  # in %
-    drawdown_52w = metrics.get("drawdownFrom52wHighPct")  # negative %, e.g. -25.0
+    rsi5 = metrics.get("rsi5")
+    dip_20d = metrics.get("dip20dPct")
+    dist_50d = metrics.get("distFrom50dPct")
+    dist_200d = metrics.get("distFrom200dPct")
+    drawdown_52w = metrics.get("drawdownFrom52wHighPct")
+
+    # Detect severe technical waterfall / falling knife
+    is_waterfall_crash = bool(
+        (dip_20d is not None and dip_20d <= -25.0 and dist_50d is not None and dist_50d <= -20.0)
+        or (
+            dip_20d is not None
+            and dip_20d <= -22.0
+            and dist_50d is not None
+            and dist_50d <= -18.0
+            and dist_200d is not None
+            and dist_200d <= -16.0
+        )
+    )
+    is_shock_selloff = bool(
+        shock_active
+        and (
+            (dip_20d is not None and dip_20d <= -8.0)
+            or (dist_50d is not None and dist_50d <= -8.0)
+            or (rsi is not None and rsi <= 45.0)
+        )
+    )
+    is_falling_knife = is_waterfall_crash or is_shock_selloff
+
+    # Compute Reasonable Price Range first so Valuation Pillar & Score align 100% with Cheap/Fair/Expensive
+    range_info = compute_price_range(metrics, shock_alert, is_waterfall_crash)
+    vs_fair_pct = range_info["vsFairPct"]
+    val_zone = range_info["valuationZone"]
 
     # --- 1. VALUATION PILLAR (0-100) ---
-    val_parts: list[tuple[float, float]] = []  # (score, weight)
+    val_parts: list[tuple[float, float]] = []
 
-    effective_pe = f_pe if (f_pe and f_pe > 0) else (t_pe if (t_pe and t_pe > 0) else None)
+    if is_memory_cyclical:
+        effective_pe = t_pe if (t_pe and t_pe > 0) else (f_pe * 2.2 if (f_pe and f_pe > 0) else None)
+    else:
+        effective_pe = f_pe if (f_pe and f_pe > 0) else (t_pe if (t_pe and t_pe > 0) else None)
+
     if effective_pe is not None:
-        if is_financial:
-            pe_score = interp(effective_pe, [(7, 96), (11, 82), (14, 65), (18, 45), (25, 22), (35, 8)])
+        if is_financial or is_memory_cyclical:
+            pe_score = interp(effective_pe, [(7, 94), (11, 80), (14, 64), (18, 45), (25, 22), (35, 8)])
         else:
             pe_score = interp(effective_pe, [(9, 96), (14, 86), (19, 72), (24, 56), (31, 38), (42, 20), (65, 6)])
-        val_parts.append((pe_score, 0.38))
+        val_parts.append((pe_score, 0.30))
     elif (t_pe is not None and t_pe < 0) or (f_pe is not None and f_pe < 0):
-        # Unprofitable
-        val_parts.append((12.0, 0.38))
+        val_parts.append((12.0, 0.30))
 
-    if peg is not None and peg > 0:
-        peg_score = interp(peg, [(0.4, 98), (0.85, 88), (1.2, 74), (1.65, 58), (2.2, 38), (3.0, 20), (4.5, 6)])
-        val_parts.append((peg_score, 0.32))
+    # Price vs. Fundamental Fair Value score (ensures Cheap/Fair/Expensive coherence)
+    fair_gap_score = interp(
+        vs_fair_pct,
+        [(-40, 96), (-22, 86), (-10, 72), (0, 60), (15, 44), (25, 30), (45, 14), (80, 5)],
+    )
+    val_parts.append((fair_gap_score, 0.30))
+
+    if not is_memory_cyclical and peg is not None and peg > 0:
+        peg_score = interp(peg, [(0.4, 96), (0.85, 86), (1.2, 72), (1.65, 56), (2.2, 38), (3.0, 20), (4.5, 6)])
+        val_parts.append((peg_score, 0.20))
     elif peg is not None and peg < 0:
-        val_parts.append((18.0, 0.25))
+        val_parts.append((18.0, 0.16))
 
     if not is_financial and fcf_yield is not None:
-        fcf_score = interp(fcf_yield, [(-2.0, 10), (0.5, 25), (2.0, 46), (3.5, 66), (5.0, 82), (7.5, 95)])
-        val_parts.append((fcf_score, 0.18))
+        fcf_score = interp(fcf_yield, [(-2.0, 14), (0.5, 28), (2.0, 48), (3.5, 68), (5.0, 84), (7.5, 95)])
+        val_parts.append((fcf_score, 0.12))
     elif is_financial and pb is not None and pb > 0:
         pb_score = interp(pb, [(0.8, 92), (1.3, 78), (2.0, 62), (3.2, 44), (6.0, 25)])
-        val_parts.append((pb_score, 0.22))
+        val_parts.append((pb_score, 0.20))
 
     if not is_financial and ev_ebitda is not None and ev_ebitda > 0:
         ev_score = interp(ev_ebitda, [(6, 95), (10, 82), (15, 65), (22, 45), (32, 24), (50, 8)])
-        val_parts.append((ev_score, 0.12))
+        val_parts.append((ev_score, 0.08))
 
-    if val_parts:
-        val_score = sum(s * w for s, w in val_parts) / sum(w for _, w in val_parts)
-    else:
-        val_score = 45.0
+    val_score = (
+        sum(s * w for s, w in val_parts) / sum(w for _, w in val_parts)
+        if val_parts
+        else 45.0
+    )
 
     # --- 2. QUALITY & BALANCE SHEET PILLAR (0-100) ---
     qual_parts: list[tuple[float, float]] = []
@@ -380,7 +826,8 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
     # --- 4. UPSIDE & WALL ST CONSENSUS PILLAR (0-100) ---
     up_parts: list[tuple[float, float]] = []
     if upside_pct is not None:
-        u_score = interp(upside_pct, [(-15, 12), (-5, 28), (0, 42), (10, 64), (20, 80), (35, 93), (55, 98)])
+        eff_upside = upside_pct * 0.55 if shock_active else upside_pct
+        u_score = interp(eff_upside, [(-15, 12), (-5, 28), (0, 42), (10, 64), (20, 80), (35, 93), (55, 98)])
         up_parts.append((u_score, 0.65))
     if rec_mean is not None:
         r_score = interp(rec_mean, [(1.3, 95), (1.8, 82), (2.3, 66), (2.8, 48), (3.5, 25), (4.2, 10)])
@@ -392,33 +839,32 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
     )
 
     # --- 5. ENTRY TIMING / TECHNICALS PILLAR (0-100) ---
-    # Rewards healthy pullbacks/oversold entries on solid companies, flags overbought spikes
-    time_parts: list[tuple[float, float]] = []
     fundamental_health = 0.55 * qual_score + 0.45 * grow_score
-    if rsi is not None:
-        if fundamental_health >= 55:
-            # Dip in a strong business is an opportunity; >72 RSI means stretched short-term
-            rsi_score = interp(rsi, [(22, 88), (32, 92), (45, 78), (58, 62), (68, 42), (78, 20), (85, 10)])
-        else:
-            # Weak fundamentals: oversold can be a value trap
-            rsi_score = interp(rsi, [(25, 45), (40, 58), (55, 55), (70, 32), (80, 15)])
-        time_parts.append((rsi_score, 0.50))
+    if is_falling_knife:
+        # Never reward catching an active waterfall crash or CEO/probe shock!
+        timing_score = 18.0 if shock_active else 24.0
+    else:
+        time_parts: list[tuple[float, float]] = []
+        if rsi is not None:
+            if fundamental_health >= 55:
+                rsi_score = interp(rsi, [(24, 86), (33, 92), (45, 78), (58, 62), (68, 42), (78, 20), (85, 10)])
+            else:
+                rsi_score = interp(rsi, [(25, 42), (40, 56), (55, 55), (70, 32), (80, 15)])
+            time_parts.append((rsi_score, 0.50))
 
-    if dist_200d is not None:
-        # Near or slightly below 200d MA (-12% to +8%) offers good risk/reward vs +35% extended
-        d200_score = interp(dist_200d, [(-30, 55), (-10, 84), (0, 80), (10, 64), (22, 44), (38, 22)])
-        time_parts.append((d200_score, 0.30))
+        if dist_200d is not None:
+            d200_score = interp(dist_200d, [(-30, 44), (-12, 84), (0, 80), (10, 64), (22, 44), (38, 22)])
+            time_parts.append((d200_score, 0.30))
 
-    if drawdown_52w is not None:
-        # drawdown_52w is <= 0 (e.g. -22%)
-        dd_score = interp(drawdown_52w, [(-50, 58), (-28, 86), (-15, 78), (-5, 55), (0, 44)])
-        time_parts.append((dd_score, 0.20))
+        if drawdown_52w is not None:
+            dd_score = interp(drawdown_52w, [(-50, 46), (-25, 84), (-14, 78), (-5, 55), (0, 44)])
+            time_parts.append((dd_score, 0.20))
 
-    timing_score = (
-        sum(s * w for s, w in time_parts) / sum(w for _, w in time_parts)
-        if time_parts
-        else 55.0
-    )
+        timing_score = (
+            sum(s * w for s, w in time_parts) / sum(w for _, w in time_parts)
+            if time_parts
+            else 55.0
+        )
 
     # --- WEIGHTED TOTAL SCORE ---
     total = (
@@ -429,22 +875,33 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
         + 0.10 * timing_score
     )
 
-    # Guardrail: if valuation is extremely stretched (val_score < 25), cap score below Hold/Buy
-    if val_score < 24 and total > 45:
-        total = 44.0
-    elif val_score < 48 and total > 64:
-        # Wonderful company at a full/rich price -> Hold / Watch for a better entry
-        total = 62.0
-    # Guardrail: if business quality + growth are both deeply distressed, cap score
-    if qual_score < 28 and grow_score < 28 and total > 45:
-        total = 43.0
+    # Valuation Guardrails (strict alignment with Reasonable Price Range)
+    if val_score < 24 or vs_fair_pct >= 42.0:
+        total = min(total, 43.0)
+    elif val_score < 48 or val_zone == "expensive":
+        total = min(total, 61.0)
+
+    if qual_score < 28 and grow_score < 28:
+        total = min(total, 42.0)
+
+    # Corporate Shock & Falling-Knife Guardrails (prevents NVDA/NOW/INTC false Strong Buys)
+    if shock_active:
+        if qual_score >= 55 and val_score >= 50:
+            total = min(total, 55.0)  # Hold / Watch until leadership/probe dust settles
+        else:
+            total = min(total, 42.0)
+    elif is_falling_knife:
+        if qual_score >= 55 and val_score >= 50 and (net_margin is None or net_margin > 0):
+            total = min(total, 57.0)  # Hold / Watch until waterfall stabilizes
+        else:
+            total = min(total, 41.0)  # Unprofitable / weak falling knife -> Avoid
 
     score = int(round(clamp(total, 1, 99)))
 
-    if score >= 78 and val_score >= 60:
+    if score >= 78 and val_score >= 60 and val_zone != "expensive" and not is_falling_knife and not shock_active:
         verdict = "Strong Buy"
         verdict_key = "strong_buy"
-    elif score >= 65 and val_score >= 48:
+    elif score >= 65 and val_score >= 48 and val_zone != "expensive" and not is_falling_knife and not shock_active:
         verdict = "Good Buy"
         verdict_key = "buy"
     elif score >= 46:
@@ -458,27 +915,49 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
     green_flags: list[str] = []
     red_flags: list[str] = []
 
-    if effective_pe is not None:
-        if effective_pe <= (12.5 if is_financial else 16.5):
-            green_flags.append(f"Attractive earnings multiple at {effective_pe:.1f}x Forward P/E")
-        elif effective_pe >= (22.0 if is_financial else 34.0):
-            red_flags.append(f"Rich earnings multiple at {effective_pe:.1f}x Forward P/E")
+    if shock_active and shock_alert:
+        shock_msg = shock_alert["reason"]
+        if dip_20d is not None and dip_20d <= -10.0:
+            shock_msg += f" ({dip_20d:.0f}% 20d plunge — wait for base stabilization)"
+        red_flags.append(shock_msg)
+    elif is_falling_knife:
+        red_flags.append(
+            f"Severe falling-knife breakdown ({dip_20d or 0.0:.0f}% off 20d high, {dist_50d or 0.0:.0f}% vs 50d MA) — wait for trend stabilization"
+        )
 
-    if peg is not None and peg > 0:
+    cur_sym = metrics.get("currencySymbol") or "$"
+    if val_zone == "cheap":
+        green_flags.append(
+            f"Trading in Cheap zone ({abs(vs_fair_pct):.0f}% below ~{cur_sym}{range_info['fairPrice']:,.0f} fair value)"
+        )
+    elif val_zone == "expensive":
+        red_flags.append(
+            f"Trading in Expensive zone (+{vs_fair_pct:.0f}% above ~{cur_sym}{range_info['fairPrice']:,.0f} fair value)"
+        )
+
+    if effective_pe is not None:
+        if effective_pe <= (12.0 if (is_financial or is_memory_cyclical) else 17.0):
+            green_flags.append(f"Attractive earnings multiple ({effective_pe:.1f}x P/E)")
+        elif effective_pe >= (22.0 if is_financial else 34.0):
+            red_flags.append(f"Rich earnings multiple ({effective_pe:.1f}x Forward P/E)")
+
+    if not is_memory_cyclical and peg is not None and peg > 0:
         if peg <= 1.15:
-            green_flags.append(f"Growth at a bargain price (PEG ratio {peg:.2f}x, under 1.2x)")
+            green_flags.append(f"Growth at a bargain price (PEG ratio {peg:.2f}x)")
         elif peg >= 2.4:
             red_flags.append(f"High price relative to growth (PEG ratio {peg:.2f}x)")
 
     if not is_financial and fcf_yield is not None:
-        if fcf_yield >= 4.2:
+        if fcf_yield >= 4.0:
             green_flags.append(f"Strong {fcf_yield:.1f}% Free Cash Flow yield")
-        elif fcf_yield < 1.2:
-            red_flags.append(f"Thin {fcf_yield:.1f}% Free Cash Flow yield at current valuation")
+        elif fcf_yield < 1.0 and val_zone == "expensive":
+            red_flags.append(f"Thin {fcf_yield:.1f}% Free Cash Flow yield at current price")
 
     if net_margin is not None:
         if net_margin >= 22.0:
             green_flags.append(f"High-margin business ({net_margin:.1f}% net profit margin)")
+        elif net_margin < 0:
+            red_flags.append(f"Currently unprofitable ({net_margin:.1f}% net margin)")
         elif net_margin < 5.0:
             red_flags.append(f"Slim {net_margin:.1f}% net profit margin")
 
@@ -488,43 +967,36 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
         elif rev_growth < 0:
             red_flags.append(f"Contracting revenue ({rev_growth:.1f}% YoY)")
 
-    if eps_growth is not None and eps_growth >= 18.0:
-        eg_txt = ">100%" if eps_growth > 100.0 else f"+{eps_growth:.1f}%"
-        green_flags.append(f"Strong profit growth ({eg_txt} earnings trajectory)")
-
-    if upside_pct is not None:
-        if upside_pct >= 18.0:
-            green_flags.append(f"+{upside_pct:.0f}% implied upside to Wall St. consensus target")
-        elif upside_pct <= -3.0:
-            red_flags.append(f"Trading {abs(upside_pct):.0f}% above consensus analyst target")
-
-    if rsi is not None:
-        if rsi <= 37.0:
-            green_flags.append(f"Oversold / pullback territory (14d RSI {rsi:.0f}) — favorable entry")
+    if rsi is not None and not is_falling_knife and not shock_active:
+        if rsi <= 38.0 and verdict_key in ("strong_buy", "buy"):
+            green_flags.append(f"Healthy oversold pullback (14d RSI {rsi:.0f}) — favorable entry")
         elif rsi >= 71.0:
             red_flags.append(f"Short-term overbought (14d RSI {rsi:.0f}) — risk of pullback")
 
-    if drawdown_52w is not None and drawdown_52w <= -20.0 and fundamental_health >= 60:
-        green_flags.append(f"Pulled back {abs(drawdown_52w):.0f}% from 52-week high while fundamentals stay strong")
-
-    if not is_financial and net_cash_pct is not None and net_cash_pct >= 3.0:
-        green_flags.append("Fortress balance sheet with more cash than total debt")
-    elif not is_financial and debt_to_eq is not None and debt_to_eq >= 2.0:
+    if not is_financial and net_cash_pct is not None and net_cash_pct >= 4.0:
+        green_flags.append("Fortress net-cash balance sheet")
+    elif not is_financial and debt_to_eq is not None and debt_to_eq >= 2.2:
         red_flags.append(f"Elevated leverage ({debt_to_eq:.2f}x Debt/Equity)")
 
     # Craft concise 1-sentence takeaway
-    if verdict_key in ("strong_buy", "buy"):
+    if shock_active or is_falling_knife:
+        warn = red_flags[0]
+        if verdict_key == "hold" and val_zone in ("cheap", "fair"):
+            summary = f"{warn} — optical multiples look attractive, so watch for stabilization."
+        elif len(red_flags) > 1:
+            summary = f"{warn}; {red_flags[1][0].lower() + red_flags[1][1:]}."
+        else:
+            summary = f"{warn}."
+    elif verdict_key in ("strong_buy", "buy"):
         lead = green_flags[0] if green_flags else "Solid balance of valuation and profitability"
         if len(green_flags) > 1:
             second = green_flags[1]
             summary = f"{lead}; {second[0].lower() + second[1:]}."
-        elif red_flags:
-            summary = f"{lead}. Watch: {red_flags[0].lower()}."
         else:
-            summary = f"{lead} backed by healthy balance-sheet fundamentals."
+            summary = f"{lead} backed by healthy fundamentals."
     elif verdict_key == "hold":
-        pro = green_flags[0] if green_flags else "Steady business fundamentals"
-        con = red_flags[0] if red_flags else "valuation looks fairly priced right now"
+        pro = green_flags[0] if green_flags else "Solid underlying business"
+        con = red_flags[0] if red_flags else f"trading near fair value (~{cur_sym}{range_info['fairPrice']:,.0f})"
         summary = f"{pro}, offset by {con[0].lower() + con[1:]}."
     else:
         con1 = red_flags[0] if red_flags else "Stretched valuation leaves little margin of safety"
@@ -539,11 +1011,7 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
         "timing": {"score": round(timing_score), "status": status_from_score(timing_score), "label": "Timing"},
     }
 
-    # --- EXPLICIT DAILY DIP SIGNAL ("IS TODAY A GOOD DAY TO BUY?") ---
-    rsi5 = metrics.get("rsi5")
-    dip_20d = metrics.get("dip20dPct")  # <= 0, e.g. -8.5% off 20d high
-    dist_50d = metrics.get("distFrom50dPct")
-
+    # --- EXPLICIT DAILY DIP vs. FALLING-KNIFE SIGNAL ---
     is_sharp_dip = (
         (rsi is not None and rsi <= 38.0)
         or (rsi5 is not None and rsi5 <= 24.0 and dip_20d is not None and dip_20d <= -7.0)
@@ -561,11 +1029,25 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
         or (rsi5 is not None and rsi5 >= 82.0 and dist_50d is not None and dist_50d >= 12.0)
     )
 
-    if is_sharp_dip and verdict_key in ("strong_buy", "buy"):
+    if shock_active or is_falling_knife:
+        dip_key = "falling_knife"
+        dip_label = shock_alert["badge"] if (shock_active and shock_alert) else "🚨 Falling Knife"
+        if shock_active and shock_alert:
+            dip_reason = (
+                f"{shock_alert['reason']} (20d: {dip_20d or 0.0:.1f}%, vs 200d MA: {dist_200d or 0.0:.1f}%). "
+                "Trailing multiples lag sudden leadership/probe shocks — wait for a stable price base before buying."
+            )
+        else:
+            dip_reason = (
+                f"Steep waterfall sell-off ({dip_20d or 0.0:.1f}% off 20d high, {dist_50d or 0.0:.1f}% below 50d MA). "
+                "Avoid catching a falling knife until price reclaims short-term support."
+            )
+        dip_rank = 10.0
+    elif is_sharp_dip and verdict_key in ("strong_buy", "buy"):
         dip_key = "prime_dip"
         dip_label = "⚡ Prime Dip"
         score = min(99, score + 3)
-        if score >= 78 and val_score >= 60:
+        if score >= 78 and val_score >= 60 and val_zone != "expensive":
             verdict = "Strong Buy"
             verdict_key = "strong_buy"
         dip_parts_txt = []
@@ -573,33 +1055,42 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
             dip_parts_txt.append(f"14d RSI {rsi:.0f}")
         if dip_20d is not None and dip_20d <= -4.0:
             dip_parts_txt.append(f"{dip_20d:.1f}% off 20d high")
-        dip_reason = f"High-conviction buyable dip ({', '.join(dip_parts_txt)}) on a fundamentally strong, reasonably valued stock."
+        dip_reason = f"Clean buyable dip ({', '.join(dip_parts_txt)}) on an intact, reasonably valued business with no shock flags."
         dip_rank = round(clamp(80.0 + (40.0 - (rsi or 36.0)) * 0.6 + abs(min(0.0, dip_20d or 0.0)) * 0.5, 80.0, 99.0), 1)
     elif (is_sharp_dip or is_mild_dip) and score >= 52 and verdict_key != "avoid":
         dip_key = "pullback"
         dip_label = "↘ Pullback"
-        dip_reason = f"Healthy short-term pullback (RSI {rsi:.0f} / {dip_20d or 0.0:.1f}% vs 20d high) — solid entry window or watch for RSI < 38." if rsi is not None else "Moderate pullback from 20-day high."
+        dip_reason = (
+            f"Controlled pullback (RSI {rsi:.0f} / {dip_20d or 0.0:.1f}% vs 20d high) with intact trend and no governance flags."
+            if rsi is not None
+            else "Moderate pullback from 20-day high."
+        )
         dip_rank = round(clamp(62.0 + abs(min(0.0, dip_20d or 0.0)) * 1.1, 60.0, 79.0), 1)
     elif is_sharp_dip:
         dip_key = "falling_knife"
-        dip_label = "⚠ Knife"
-        dip_reason = "Price is oversold short-term, but stretched valuation or weak fundamentals make this a falling-knife risk."
-        dip_rank = 22.0
+        dip_label = "⚠ Knife Risk"
+        dip_reason = "Oversold short-term, but stretched valuation or weak fundamentals make this a value-trap / knife risk."
+        dip_rank = 18.0
     elif is_overheated:
         dip_key = "overheated"
         dip_label = "🔥 Overheated"
-        dip_reason = f"Extended short-term rally (14d RSI {rsi:.0f}) — historically better to wait for a pullback." if rsi is not None else "Extended above short-term moving average."
-        dip_rank = 8.0
+        dip_reason = (
+            f"Extended short-term rally (14d RSI {rsi:.0f}) — wait for a calmer entry."
+            if rsi is not None
+            else "Extended above short-term moving average."
+        )
+        dip_rank = 6.0
     else:
         dip_key = "neutral"
         dip_label = "Neutral"
-        dip_reason = "Trading in a normal daily momentum range — neither oversold nor overheated today."
+        dip_reason = "Trading in a normal daily momentum range with no acute dip or shock."
         dip_rank = round(clamp(45.0 - ((rsi or 52.0) - 50.0) * 0.3, 35.0, 58.0), 1)
 
-    return {
+    out = {
         "score": score,
         "verdict": verdict,
         "verdictKey": verdict_key,
+        "isFallingKnife": bool(shock_active or is_falling_knife),
         "dipKey": dip_key,
         "dipLabel": dip_label,
         "dipReason": dip_reason,
@@ -609,6 +1100,8 @@ def score_stock(metrics: dict[str, Any]) -> dict[str, Any]:
         "redFlags": red_flags[:4],
         "summary": summary,
     }
+    out.update(range_info)
+    return out
 
 
 def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
@@ -641,7 +1134,6 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
     price = _raw(p, "regularMarketPrice") or _raw(fd, "currentPrice")
     is_ant_pre_ipo = False
     if price is None and sym == "ANT":
-        # Anthropic, PBC (CIK 0002130357) Form S-1/A-3 ($70-$78 IPO range; switches automatically to live Nasdaq price once trading opens)
         price = 78.00
         is_ant_pre_ipo = True
     elif price is None:
@@ -651,7 +1143,6 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
     fin_currency = fd.get("financialCurrency") or currency
     fx = client.get_fx_rate(fin_currency, currency)
 
-    # Fetch 1-year daily chart for RSI, short-term dip metrics, moving averages, and sparkline
     closes: list[float] = []
     dates: list[str] = []
     try:
@@ -678,7 +1169,6 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
     ma_50 = (sma50_series[-1] if sma50_series and sma50_series[-1] is not None else _raw(sd, "fiftyDayAverage"))
     ma_200 = (sma200_series[-1] if sma200_series and sma200_series[-1] is not None else _raw(sd, "twoHundredDayAverage"))
 
-    # Downsample 1Y chart to ~65 points (every 4th trading day + always include latest point)
     chart_points: list[dict[str, Any]] = []
     if closes:
         step = max(1, len(closes) // 64)
@@ -710,13 +1200,11 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
     earn_growth_raw = _raw(fd, "earningsGrowth")
     rev_growth_pct = rev_growth_raw * 100.0 if rev_growth_raw is not None else None
 
-    # Implied forward EPS growth vs trailing EPS as clean supplement to quarterly YoY earningsGrowth
     implied_eps_growth_pct: float | None = None
     if trailing_eps and forward_eps and trailing_eps > 0:
         implied_eps_growth_pct = ((forward_eps - trailing_eps) / trailing_eps) * 100.0
 
     if earn_growth_raw is not None and implied_eps_growth_pct is not None:
-        # Blend reported YoY quarterly earnings growth with forward EPS trajectory (capped against GAAP base spikes)
         eps_growth_pct = 0.5 * clamp(earn_growth_raw * 100.0, -80.0, 150.0) + 0.5 * clamp(implied_eps_growth_pct, -50.0, 120.0)
     elif earn_growth_raw is not None:
         eps_growth_pct = clamp(earn_growth_raw * 100.0, -80.0, 150.0)
@@ -738,32 +1226,30 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
     roe_val = (_raw(fd, "returnOnEquity") * 100.0) if _raw(fd, "returnOnEquity") is not None else None
     ps_val = _raw(sd, "priceToSalesTrailing12Months")
 
-    # Official Form S-1/A-3 backfill for Anthropic (ANT) during IPO week until Yahoo populates fundamental modules
     if sym == "ANT":
         diluted_shares = 18_000_000_000.0
         market_cap = market_cap or (price * diluted_shares)
-        total_rev = total_rev or 53_000_000_000.0  # FY26E booked ($81B Oct 2026 ARR; $33.24B 9M26 GAAP)
+        total_rev = total_rev or 53_000_000_000.0
         ps_val = ps_val or (market_cap / 81_000_000_000.0)
-        forward_pe = forward_pe or (market_cap / 25_000_000_000.0)  # ~2027E consensus net profit ($25B)
-        peg = peg or (forward_pe / 47.0)  # Morningstar 47% 5Y CAGR
-        rev_growth_pct = rev_growth_pct if rev_growth_pct is not None else 150.0  # +1,206% YoY 9M26 capped
+        forward_pe = forward_pe or (market_cap / 25_000_000_000.0)
+        peg = peg or (forward_pe / 47.0)
+        rev_growth_pct = rev_growth_pct if rev_growth_pct is not None else 150.0
         eps_growth_pct = eps_growth_pct if eps_growth_pct is not None else 80.0
         gross_m = gross_m if gross_m is not None else 43.4
-        op_m = op_m if op_m is not None else -3.8  # -$1.26B 9M26 GAAP operating loss on $33.24B rev
+        op_m = op_m if op_m is not None else -3.8
         net_m = net_m if net_m is not None else -3.8
         roe_val = roe_val if roe_val is not None else -4.0
         fcf = fcf if fcf is not None else -24_000_000_000.0
         total_cash = total_cash if total_cash is not None else 95_000_000_000.0
         total_debt = total_debt if total_debt is not None else 8_000_000_000.0
         ev = ev or (market_cap - (total_cash - total_debt))
-        target_mean = target_mean or 98.50  # Morningstar $92 + New Street $105
+        target_mean = target_mean or 98.50
         target_low = target_low or 92.00
         target_high = target_high or 105.00
         rec_mean_val = rec_mean_val or 1.8
         analyst_cnt = analyst_cnt or 2
         rsi_14 = rsi_14 if rsi_14 is not None else 55.0
 
-    # S&P 500 Index ETF (SPY / SPX) benchmark enrichment where Yahoo ETF quoteSummary omits index-level earnings ratios
     if sym == "SPY":
         forward_pe = forward_pe or (trailing_pe * 0.89 if trailing_pe else 20.8)
         rev_growth_pct = rev_growth_pct if rev_growth_pct is not None else 6.8
@@ -774,7 +1260,6 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
         roe_val = roe_val if roe_val is not None else 18.5
 
     fcf_yield = (fcf / market_cap * 100.0) if (fcf is not None and market_cap and market_cap > 0) else None
-    # Sanity filter against unadjusted ADR share-ratio quirks (>45% FCF yield on mega-caps)
     if fcf_yield is not None and abs(fcf_yield) > 45.0:
         fcf_yield = None
 
@@ -832,6 +1317,8 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
         sec_name = "Market Index"
         ind_name = "US Large-Cap Benchmark"
 
+    shock_alert = fetch_news_shock(sym, disp_name, dip_20d_pct, dist_50d, drawdown_52w, change_pct)
+
     record: dict[str, Any] = {
         "symbol": sym,
         "name": disp_name,
@@ -879,7 +1366,7 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
         "recommendationMean": r2(rec_mean_val),
         "recommendationKey": fd.get("recommendationKey") or "",
         "analystCount": analyst_cnt,
-        # Technicals & Daily Dip Signals
+        # Technicals & Corporate Shock Check
         "low52w": r2(low_52w),
         "high52w": r2(high_52w),
         "rangePos52w": r1(range_pos_52w),
@@ -893,6 +1380,7 @@ def fetch_stock(client: YahooClient, symbol: str) -> dict[str, Any]:
         "dip20dPct": r1(dip_20d_pct),
         "ret5dPct": r1(ret_5d_pct),
         "beta": r2(_raw(sd, "beta")),
+        "shockAlert": shock_alert,
         "chart": chart_points,
     }
 
@@ -937,6 +1425,8 @@ def write_payload(stocks: list[dict[str, Any]]) -> dict[str, Any]:
         "hold": sum(1 for s in stocks_sorted if s["verdictKey"] == "hold"),
         "avoid": sum(1 for s in stocks_sorted if s["verdictKey"] == "avoid"),
         "prime_dip": sum(1 for s in stocks_sorted if s.get("dipKey") == "prime_dip"),
+        "cheap_zone": sum(1 for s in stocks_sorted if s.get("valuationZone") == "cheap"),
+        "falling_knives": sum(1 for s in stocks_sorted if s.get("isFallingKnife")),
     }
     payload = {
         "updatedAt": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -957,7 +1447,7 @@ def update_all(tickers: list[str] | None = None) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     errors: list[str] = []
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=6) as pool:
         future_map = {pool.submit(fetch_stock, client, sym): sym for sym in symbols}
         for fut in as_completed(future_map):
             sym = future_map[fut]
@@ -967,7 +1457,6 @@ def update_all(tickers: list[str] | None = None) -> dict[str, Any]:
                 errors.append(f"{sym}: {exc}")
 
     if not results and STOCKS_JSON_FILE.exists():
-        # Preserve cached snapshot if network temporarily unavailable
         return json.loads(STOCKS_JSON_FILE.read_text(encoding="utf-8"))
 
     payload = write_payload(results)
@@ -984,13 +1473,14 @@ if __name__ == "__main__":
     print(
         f"Updated {c['total']} stocks in {elapsed:.1f}s -> "
         f"Strong Buy: {c['strong_buy']}, Good Buy: {c['buy']}, "
-        f"Hold: {c['hold']}, Avoid: {c['avoid']}"
+        f"Hold: {c['hold']}, Avoid: {c['avoid']} | "
+        f"Cheap Zone: {c['cheap_zone']}, Falling Knives: {c['falling_knives']}"
     )
     for st in data["stocks"][:8]:
         print(
             f"  [{st['score']:2d}] {st['verdict']:17s} {st['symbol']:6s} "
-            f"${st['price']:<8} FwdPE={st['forwardPE']} PEG={st['pegRatio']} "
-            f"FCF={st['fcfYield']}% RSI={st['rsi14']} | {st['summary']}"
+            f"${st['price']:<8} (Cheap<=${st['cheapPrice']:.0f} | Fair~${st['fairPrice']:.0f} | Exp>=${st['expensivePrice']:.0f}) "
+            f"{st['dipLabel']} | {st['summary']}"
         )
     if data.get("warnings"):
         print("Warnings:", data["warnings"], file=sys.stderr)

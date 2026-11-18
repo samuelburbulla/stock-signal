@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stock Signal — Daily Buy-Readiness Screener &amp; 5Y Backtest</title>
-  <meta name="description" content="At-a-glance daily stock screener showing Buy, Hold, and Avoid signals with valuation multiples, RSI timing, plain-English takeaways, and a 5-year point-in-time historical depot backtest." />
+  <title>Stock Signal — Good vs. Expensive Stocks &amp; Reasonable Price Ranges</title>
+  <meta name="description" content="Clean daily stock screener showing Strong Buy, Good Buy, Hold, and Expensive/Avoid stocks with Cheap-to-Expensive price ranges, valuation multiples, and falling-knife / leadership-shock protection." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -14,23 +14,15 @@
   <div class="app-shell">
     <!-- Top Header -->
     <header class="topbar">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
-        <div class="brand-group">
-          <div class="brand-title-row">
-            <span class="brand-mark" aria-hidden="true">S</span>
-            <h1>Stock Signal</h1>
-          </div>
-          <div class="sync-meta">
-            <span class="live-dot" aria-hidden="true"></span>
-            <span id="last-updated-text">Updated daily · Loading snapshot…</span>
-          </div>
+      <div class="brand-group">
+        <div class="brand-title-row">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <h1>Stock Signal</h1>
         </div>
-
-        <nav class="main-nav-tabs" aria-label="Primary Views">
-          <button id="nav-tab-screener" type="button" class="main-nav-btn active">Today’s Screener</button>
-          <button id="nav-tab-depot" type="button" class="main-nav-btn">⚡ Current 4-Rule Depot &amp; Alerts</button>
-          <button id="nav-tab-backtest" type="button" class="main-nav-btn">5Y Depot Backtest</button>
-        </nav>
+        <div class="sync-meta">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span id="last-updated-text">Updated daily · Loading snapshot…</span>
+        </div>
       </div>
 
       <div class="topbar-actions">
@@ -40,13 +32,13 @@
             class="add-ticker-input"
             type="text"
             maxlength="12"
-            placeholder="Add ticker (e.g. ANT, SPCX, SPY)"
-            aria-label="Add stock ticker symbol"
+            placeholder="Add ticker (e.g. NVDA, ANT, SPY)"
+            aria-label="Add or jump to stock ticker symbol"
           />
           <button id="add-ticker-btn" type="submit" class="btn btn-primary">+ Track</button>
         </form>
 
-        <button id="refresh-live-btn" type="button" class="btn" title="Fetch fresh live prices and fundamentals right now">
+        <button id="refresh-live-btn" type="button" class="btn" title="Fetch fresh live prices, news-shock checks, and fundamentals">
           ↻ Refresh Now
         </button>
 
@@ -70,384 +62,140 @@
     <section id="guide-bar" class="guide-bar" aria-label="Plain-English Indicator Guide">
       <div class="guide-item">
         <strong>Buy Score (1–99)</strong>
-        <span>Combines Valuation (35%), Quality (20%), Growth (20%), Target Upside (15%), and Entry Timing (10%). Expensive stocks cannot get a Buy badge even if popular.</span>
+        <span>Blends Valuation (35%), Quality (20%), Growth (20%), Upside (15%), and Timing (10%). Overpriced stocks and falling knives are capped out of Buy ratings.</span>
       </div>
       <div class="guide-item">
-        <strong>Forward P/E &amp; PEG</strong>
-        <span><b>Fwd P/E</b> = price vs next year’s profits (&lt;17x is cheap, &gt;32x is pricey). <b>PEG</b> adjusts P/E for growth: <b>under 1.0x</b> is a growth bargain.</span>
+        <strong>Cheap ↔ Expensive Range</strong>
+        <span>Fundamental price anchors from growth-adjusted earnings &amp; cash flow: <b>Cheap</b> (&le;&minus;18% below Fair), <b>Fair</b> (~intrinsic value), and <b>Expensive</b> (&ge;+20% premium).</span>
       </div>
       <div class="guide-item">
-        <strong>FCF Yield (%)</strong>
-        <span>Real cash profit generated per year divided by market cap. <b>4%+</b> means strong cash generation; under 1% means pricey.</span>
+        <strong>Forward P/E, PEG &amp; FCF</strong>
+        <span><b>Fwd P/E</b> = price vs. next 12m profits (&lt;17x cheap, &gt;32x pricey). <b>PEG &lt; 1.0x</b> = growth bargain. <b>FCF Yield &ge; 3.8%</b> = strong cash return.</span>
       </div>
       <div class="guide-item">
-        <strong>Dip Signal &amp; RSI Timing</strong>
-        <span>Flags daily entry windows: <b>⚡ Prime Dip</b> = Buy-rated stock with 14d RSI ≤ 38 or sharp 20d drop; <b>🔥 Overheated</b> = RSI ≥ 70 (wait for pullback).</span>
+        <strong>Dip vs. Falling Knife (⚡ vs. 🚨)</strong>
+        <span><b>⚡ Prime Dip</b> = healthy pullback on an intact business; <b>🚨 Falling Knife / Shock</b> = steep multi-MA crash or CEO exit / SEC-board probe (wait for base).</span>
       </div>
       <div class="guide-item">
         <strong>5 Indicator Bars (V · Q · G · U · T)</strong>
-        <span>Instant traffic lights for <b>V</b>aluation, <b>Q</b>uality, <b>G</b>rowth, <b>U</b>pside to Wall St. target, and <b>T</b>echnical entry timing. Click any stock for the full breakdown.</span>
+        <span>Traffic lights for <b>V</b>aluation, <b>Q</b>uality, <b>G</b>rowth, <b>U</b>pside, and <b>T</b>iming. Click any stock row for the full range bar, shock headlines, and 1Y chart.</span>
       </div>
     </section>
 
-    <!-- ==================== TAB 1: LIVE DAILY SCREENER ==================== -->
-    <div id="screener-view-root">
-      <!-- Clickable Signal Summary Buckets -->
-      <section class="signal-strip" aria-label="Filter by Buy Verdict">
-        <button id="bucket-all" type="button" class="signal-bucket active" data-verdict="all">
-          <div class="bucket-top">
-            <span class="bucket-label"><span class="bucket-dot" style="background:var(--accent)"></span>All Tracked</span>
-            <span id="count-all" class="bucket-count tabular">–</span>
-          </div>
-          <span class="bucket-desc">Full daily watchlist</span>
-        </button>
-
-        <button id="bucket-strong_buy" type="button" class="signal-bucket" data-verdict="strong_buy">
-          <div class="bucket-top">
-            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-strong-dot)"></span>Strong Buy</span>
-            <span id="count-strong_buy" class="bucket-count tabular">–</span>
-          </div>
-          <span class="bucket-desc">Score 78+ · Cheap &amp; high quality</span>
-        </button>
-
-        <button id="bucket-buy" type="button" class="signal-bucket" data-verdict="buy">
-          <div class="bucket-top">
-            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-buy-dot)"></span>Good Buy</span>
-            <span id="count-buy" class="bucket-count tabular">–</span>
-          </div>
-          <span class="bucket-desc">Score 65–77 · Solid value / GARP</span>
-        </button>
-
-        <button id="bucket-prime_dip" type="button" class="signal-bucket" data-verdict="prime_dip">
-          <div class="bucket-top">
-            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-dip-dot)"></span>⚡ Prime Dip Buys</span>
-            <span id="count-prime_dip" class="bucket-count tabular">–</span>
-          </div>
-          <span class="bucket-desc">Buy-rated + acute daily dip</span>
-        </button>
-
-        <button id="bucket-hold" type="button" class="signal-bucket" data-verdict="hold">
-          <div class="bucket-top">
-            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-hold-dot)"></span>Hold / Watch</span>
-            <span id="count-hold" class="bucket-count tabular">–</span>
-          </div>
-          <span class="bucket-desc">Good business, wait for pullback</span>
-        </button>
-
-        <button id="bucket-avoid" type="button" class="signal-bucket" data-verdict="avoid">
-          <div class="bucket-top">
-            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-avoid-dot)"></span>Expensive / Avoid</span>
-            <span id="count-avoid" class="bucket-count tabular">–</span>
-          </div>
-          <span class="bucket-desc">Stretched valuation or weak setup</span>
-        </button>
-      </section>
-
-      <!-- Smart Presets + Search + View Mode -->
-      <section class="controls-bar" aria-label="Screening Presets and Filters">
-        <div class="preset-pills" id="preset-pills">
-          <button id="preset-all" type="button" class="pill active" data-preset="all">All</button>
-          <button id="preset-top_buys" type="button" class="pill" data-preset="top_buys">Best Buys Today</button>
-          <button id="preset-oversold_dips" type="button" class="pill" data-preset="oversold_dips">⚡ Prime Dips &amp; Pullbacks</button>
-          <button id="preset-bargain_growth" type="button" class="pill" data-preset="bargain_growth">Bargain Growth (PEG ≤ 1.0)</button>
-          <button id="preset-cash_cows" type="button" class="pill" data-preset="cash_cows">High Cash Flow (FCF ≥ 3.5%)</button>
+    <!-- Clickable Signal Summary Buckets -->
+    <section class="signal-strip" aria-label="Filter by Buy Verdict">
+      <button id="bucket-all" type="button" class="signal-bucket active" data-verdict="all">
+        <div class="bucket-top">
+          <span class="bucket-label"><span class="bucket-dot" style="background:var(--accent)"></span>All Tracked</span>
+          <span id="count-all" class="bucket-count tabular">–</span>
         </div>
+        <span class="bucket-desc">Full daily watchlist</span>
+      </button>
 
-        <div class="filter-controls">
-          <input
-            id="filter-search-input"
-            class="search-input"
-            type="search"
-            placeholder="Filter symbol or name (ANT, SPX…)"
-            aria-label="Filter stocks by ticker or company name"
-          />
-
-          <select id="sector-filter-select" class="select-control" aria-label="Filter by sector">
-            <option value="all">All Sectors</option>
-          </select>
-
-          <div class="view-toggle" role="group" aria-label="Display layout">
-            <button id="view-table-btn" type="button" class="view-btn active">Table</button>
-            <button id="view-cards-btn" type="button" class="view-btn">Cards</button>
-          </div>
+      <button id="bucket-strong_buy" type="button" class="signal-bucket" data-verdict="strong_buy">
+        <div class="bucket-top">
+          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-strong-dot)"></span>Strong Buy</span>
+          <span id="count-strong_buy" class="bucket-count tabular">–</span>
         </div>
-      </section>
+        <span class="bucket-desc">Score 78+ · Cheap &amp; intact</span>
+      </button>
 
-      <!-- Primary At-a-Glance Table -->
-      <main>
-        <div id="table-view-container" class="table-card">
-          <div class="table-scroll">
-            <table class="stock-table" id="stock-table">
-              <thead>
-                <tr>
-                  <th class="sortable sorted" data-sort="score" title="Composite Buy Score (1-99) combining Valuation, Quality, Growth, Upside, and Entry Timing">Signal ↓</th>
-                  <th class="sortable" data-sort="symbol">Company</th>
-                  <th title="5 Traffic-Light Pillars: Valuation, Quality, Growth, Analyst Upside, Technical Timing">Indicators (V·Q·G·U·T)</th>
-                  <th class="num sortable" data-sort="price">Price / 1D</th>
-                  <th class="num sortable" data-sort="forwardPE" title="Forward P/E (lower = cheaper relative to next 12m earnings). Green under 16.5x, Red above 33x.">Fwd P/E</th>
-                  <th class="num sortable" data-sort="pegRatio" title="PEG Ratio = P/E divided by expected EPS growth. Under 1.0x is considered a growth bargain.">PEG</th>
-                  <th class="num sortable" data-sort="fcfYield" title="Free Cash Flow Yield = annual Free Cash Flow / Market Cap (higher = more real cash return).">FCF Yield</th>
-                  <th class="num sortable" data-sort="revenueGrowth" title="Year-over-year Revenue Growth and blended EPS Growth">Rev / EPS Gr.</th>
-                  <th class="num sortable" data-sort="profitMargin" title="Net Profit Margin & Return on Equity">Net Margin</th>
-                  <th class="num sortable" data-sort="dipRank" title="Daily Dip Signal combining 14d RSI, 5d fast RSI, 20-day pullback, and fundamental Buy rating">Dip Signal / RSI</th>
-                  <th class="num sortable" data-sort="targetUpsidePct" title="Implied upside or downside to Wall Street consensus mean price target">Target Upside</th>
-                  <th class="num" title="Current position within 52-week Low to High price range + 1-year price trend">52W &amp; 1Y Trend</th>
-                </tr>
-              </thead>
-              <tbody id="stock-table-body"></tbody>
-            </table>
-          </div>
+      <button id="bucket-buy" type="button" class="signal-bucket" data-verdict="buy">
+        <div class="bucket-top">
+          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-buy-dot)"></span>Good Buy</span>
+          <span id="count-buy" class="bucket-count tabular">–</span>
         </div>
+        <span class="bucket-desc">Score 65–77 · Solid value / GARP</span>
+      </button>
 
-        <!-- Optional Visual Cards Grid -->
-        <div id="cards-view-container" class="cards-grid"></div>
-      </main>
-    </div>
-
-    <!-- ==================== TAB 2: CURRENT 4-RULE DEPOT & EMAIL ALERTS ==================== -->
-    <section id="depot-view-root" class="hidden-panel" aria-label="Current 4-Rule Playbook Depot and Email Alerts">
-      <div class="bt-toolbar" style="flex-direction:column;align-items:stretch;gap:12px;">
-        <!-- 4 Rules Strip -->
-        <div class="depot-rules-grid">
-          <div class="depot-rule-chip">
-            <span class="depot-rule-num">1</span>
-            <div>
-              <strong>S&amp;P 100 Mega-Caps Only</strong>
-              <span>Dominant blue chips only — zero mid-cap falling knives</span>
-            </div>
-          </div>
-          <div class="depot-rule-chip">
-            <span class="depot-rule-num">2</span>
-            <div>
-              <strong>Up to 6 Equal Slots · Idle in SPY</strong>
-              <span>Equal weight across active dips; 100% SPY when 0 qualify</span>
-            </div>
-          </div>
-          <div class="depot-rule-chip">
-            <span class="depot-rule-num">3</span>
-            <div>
-              <strong>Buy ⚡ Prime Dip (Max 3/Sector)</strong>
-              <span>Score &ge;64, Val &ge;48 &amp; RSI-14 &le;42 / 20d dip &le;-6%</span>
-            </div>
-          </div>
-          <div class="depot-rule-chip">
-            <span class="depot-rule-num">4</span>
-            <div>
-              <strong>Hold &ge;10d · Sell RSI &ge;72 / Score &lt;50</strong>
-              <span>Also exits on sharp snap-back (5d RSI &ge;78) · 0.10% fee</span>
-            </div>
-          </div>
+      <button id="bucket-prime_dip" type="button" class="signal-bucket" data-verdict="prime_dip">
+        <div class="bucket-top">
+          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-dip-dot)"></span>⚡ Prime Dip Buys</span>
+          <span id="count-prime_dip" class="bucket-count tabular">–</span>
         </div>
+        <span class="bucket-desc">Buy-rated + clean pullback</span>
+      </button>
 
-        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-top:9px;border-top:1px solid var(--border-subtle);">
-          <div class="bt-capital-group" style="flex-wrap:wrap;gap:8px;">
-            <label for="depot-capital-input">Starting Depot ($):</label>
-            <input id="depot-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
-            <div class="preset-pills" id="depot-cap-pills">
-              <button type="button" class="pill active" data-cap="10000">$10k</button>
-              <button type="button" class="pill" data-cap="25000">$25k</button>
-              <button type="button" class="pill" data-cap="50000">$50k</button>
-              <button type="button" class="pill" data-cap="100000">$100k</button>
-            </div>
-          </div>
-
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
-            <span style="font-size:0.78rem;font-weight:600;color:var(--text-secondary);">Horizon:</span>
-            <div class="preset-pills" id="depot-window-pills">
-              <button type="button" class="pill active" data-win="4y">4 Years (Nov 2022–Today)</button>
-              <button type="button" class="pill" data-win="5y">5 Years</button>
-              <button type="button" class="pill" data-win="3y">3 Years</button>
-              <button type="button" class="pill" data-win="2y">2 Years</button>
-              <button type="button" class="pill" data-win="1y">1 Year</button>
-            </div>
-          </div>
+      <button id="bucket-hold" type="button" class="signal-bucket" data-verdict="hold">
+        <div class="bucket-top">
+          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-hold-dot)"></span>Hold / Watch</span>
+          <span id="count-hold" class="bucket-count tabular">–</span>
         </div>
+        <span class="bucket-desc">Wait for cheaper price or stability</span>
+      </button>
+
+      <button id="bucket-avoid" type="button" class="signal-bucket" data-verdict="avoid">
+        <div class="bucket-top">
+          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-avoid-dot)"></span>Expensive / Avoid</span>
+          <span id="count-avoid" class="bucket-count tabular">–</span>
+        </div>
+        <span class="bucket-desc">Overpriced or weak fundamentals</span>
+      </button>
+    </section>
+
+    <!-- Smart Presets + Search + View Mode -->
+    <section class="controls-bar" aria-label="Screening Presets and Filters">
+      <div class="preset-pills" id="preset-pills">
+        <button id="preset-all" type="button" class="pill active" data-preset="all">All</button>
+        <button id="preset-top_buys" type="button" class="pill" data-preset="top_buys">Good Stocks Today</button>
+        <button id="preset-cheap_zone" type="button" class="pill" data-preset="cheap_zone">In Cheap Price Zone</button>
+        <button id="preset-oversold_dips" type="button" class="pill" data-preset="oversold_dips">⚡ Buyable Dips (No Knives)</button>
+        <button id="preset-knives_and_expensive" type="button" class="pill" data-preset="knives_and_expensive">🚨 Expensive &amp; Falling Knives</button>
       </div>
 
-      <!-- 5 KPI Scorecards -->
-      <div id="depot-kpi-grid" class="bt-kpi-grid"></div>
+      <div class="filter-controls">
+        <input
+          id="filter-search-input"
+          class="search-input"
+          type="search"
+          placeholder="Filter symbol or name (NVDA, ANT, SPX…)"
+          aria-label="Filter stocks by ticker or company name"
+        />
 
-      <!-- 4-Rule Depot vs SPY Equity Curve -->
-      <div class="bt-chart-card">
-        <div class="chart-legend" style="margin-bottom:10px;">
-          <div class="legend-items" style="flex-wrap:wrap;gap:14px;">
-            <span><i class="legend-swatch" style="background:var(--sig-dip-dot)"></i><strong>⚡ 4-Rule Playbook Depot</strong> (Survivorship-Free S&amp;P 100 · Net of 0.10% Fee)</span>
-            <span><i class="legend-swatch" style="background:var(--text-muted)"></i><strong>S&amp;P 500 (SPY Total Return)</strong></span>
-          </div>
-          <span id="depot-chart-readout" class="tabular">Hover curve to inspect depot value &amp; profit</span>
+        <select id="sector-filter-select" class="select-control" aria-label="Filter by sector">
+          <option value="all">All Sectors</option>
+        </select>
+
+        <div class="view-toggle" role="group" aria-label="Display layout">
+          <button id="view-table-btn" type="button" class="view-btn active">Table</button>
+          <button id="view-cards-btn" type="button" class="view-btn">Cards</button>
         </div>
-        <canvas id="depot-equity-canvas"></canvas>
       </div>
+    </section>
 
-      <!-- Current Live 6-Slot Depot Table -->
-      <div class="table-card" style="margin-top:14px;">
-        <div style="padding:13px 16px;border-bottom:1px solid var(--border-subtle);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
-          <div>
-            <h3 style="margin:0;font-size:0.95rem;">📊 Current Live 4-Rule Depot Holdings (6 Equal Slots · Auto-Updated Twice Daily)</h3>
-            <p id="depot-slots-subtitle" style="margin:2px 0 0;font-size:0.77rem;color:var(--text-muted);">Click any stock row to inspect its full valuation &amp; RSI chart.</p>
-          </div>
-          <a href="#email-alerts-box" class="btn btn-primary" style="text-decoration:none;font-size:0.78rem;">🔔 Email Me On Signal Change</a>
-        </div>
+    <!-- Primary At-a-Glance Table -->
+    <main>
+      <div id="table-view-container" class="table-card">
         <div class="table-scroll">
-          <table class="stock-table" id="depot-slots-table">
+          <table class="stock-table" id="stock-table">
             <thead>
               <tr>
-                <th>Slot</th>
-                <th>Position</th>
-                <th class="num">Slot Value</th>
-                <th class="num">Entry Date &amp; Price</th>
-                <th class="num">Current Price</th>
-                <th class="num">Slot P&amp;L</th>
-                <th class="num">Hold Days</th>
-                <th>Exit Rule Distance (Sell RSI &ge;72 / 5d &ge;78 / Score &lt;50)</th>
+                <th class="sortable sorted" data-sort="score" title="Composite Buy Score (1-99) combining Valuation, Quality, Growth, Upside, and Entry Timing">Signal ↓</th>
+                <th class="sortable" data-sort="symbol">Company</th>
+                <th title="5 Traffic-Light Pillars: Valuation, Quality, Growth, Analyst Upside, Technical Timing">Indicators (V·Q·G·U·T)</th>
+                <th class="num sortable" data-sort="price">Price / 1D</th>
+                <th class="sortable" data-sort="vsFairPct" title="Reasonable Price Range: Cheap (≤ -18% below Fair Value) ↔ Fair ↔ Expensive (≥ +20% above Fair Value). Click to sort from cheapest to most expensive vs. Fair Value.">Reasonable Price Range (Cheap ↔ Expensive)</th>
+                <th class="num sortable" data-sort="forwardPE" title="Forward P/E (lower = cheaper relative to next 12m earnings). Green under 17x, Red above 33x.">Fwd P/E</th>
+                <th class="num sortable" data-sort="pegRatio" title="PEG Ratio = P/E divided by expected EPS growth. Under 1.0x is considered a growth bargain.">PEG</th>
+                <th class="num sortable" data-sort="fcfYield" title="Free Cash Flow Yield = annual Free Cash Flow / Market Cap (higher = more real cash return).">FCF Yield</th>
+                <th class="num sortable" data-sort="revenueGrowth" title="Year-over-year Revenue Growth and blended EPS Growth">Rev / EPS Gr.</th>
+                <th class="num sortable" data-sort="profitMargin" title="Net Profit Margin &amp; Return on Equity">Net Margin</th>
+                <th class="num sortable" data-sort="dipRank" title="Distinguishes clean buyable dips (⚡ Prime Dip) from severe breakdowns &amp; leadership/probe shocks (🚨 Falling Knife)">Dip / Shock Signal</th>
+                <th class="num" title="Current position within 52-week Low to High price range + 1-year price trend">52W &amp; 1Y Trend</th>
               </tr>
             </thead>
-            <tbody id="depot-slots-tbody"></tbody>
+            <tbody id="stock-table-body"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Bottom Two-Column: Closed Trade Ledger + Automated Email Alert Setup -->
-      <div class="bt-two-col" style="margin-top:14px;">
-        <div class="bt-panel-box">
-          <h3>Recent Closed 4-Rule Rotations &amp; Yearly Alpha</h3>
-          <div id="depot-yearly-strip" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
-          <div class="table-scroll" style="max-height:420px;overflow-y:auto;">
-            <table class="stock-table">
-              <thead>
-                <tr>
-                  <th>Stock</th>
-                  <th>Entry &rarr; Exit</th>
-                  <th class="num">Days</th>
-                  <th class="num">Return</th>
-                  <th>Exit Trigger</th>
-                </tr>
-              </thead>
-              <tbody id="depot-trades-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="bt-panel-box" id="email-alerts-box">
-          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
-            <h3 style="margin:0;">🔔 Automated Signal Email Alerts</h3>
-            <span class="dip-pill dip-pullback">● Active · Zero-Spam Mode</span>
-          </div>
-          <p style="margin:0 0 12px;font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
-            GitHub Actions runs <strong>twice every trading weekday (14:00 &amp; 21:30 UTC)</strong> and emails you <strong>only when a real signal triggers</strong>:
-            a new S&amp;P 100 <b>⚡ Prime Dip Buy</b> or a 6-Slot <b>🔴 Sell / Rotate</b> (<code>14d RSI &ge; 72</code>, <code>5d RSI &ge; 78</code>, or <code>Score &lt; 50</code>).
-          </p>
-
-          <div class="alert-setup-steps">
-            <div class="alert-step-card">
-              <div class="alert-step-title">✓ Mode 1: Instant GitHub Email Relay (Already Active — 0 Keys Needed)</div>
-              <p>Whenever a Buy or Sell rule triggers, the workflow posts to a single <code>🔔 Stock Signal — Live Buy &amp; Exit Alert Stream</code> issue mentioning <code>@samuelburbulla</code>, which GitHub immediately emails straight to your verified GitHub inbox.</p>
-            </div>
-
-            <div class="alert-step-card">
-              <div class="alert-step-title">✉ Mode 2: Direct Rich HTML Email (Gmail / iCloud / GMX / Outlook or Resend)</div>
-              <p>Want standalone HTML tables sent to any custom email address? Add Encrypted Secrets in your repo:</p>
-              <div class="secret-code-row">
-                <code>ALERT_EMAIL_TO</code> <span>Your email (e.g. <code>you@gmail.com</code>)</span>
-              </div>
-              <div class="secret-code-row">
-                <code>SMTP_USER</code> &amp; <code>SMTP_PASS</code> <span>Sender email + App Password (auto-detects Gmail, iCloud, GMX, Web.de, Outlook) — <em>or</em> set <code>RESEND_API_KEY</code></span>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
-                <a href="https://github.com/samuelburbulla/stock-signal/settings/secrets/actions" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;font-size:0.77rem;">1. Set GitHub Email Secrets &nearr;</a>
-                <a href="https://github.com/samuelburbulla/stock-signal/actions/workflows/daily-update.yml" target="_blank" rel="noopener" class="btn" style="text-decoration:none;font-size:0.77rem;">2. Run Workflow &rarr; Send Test Email &nearr;</a>
-              </div>
-            </div>
-          </div>
-
-          <details style="margin-top:12px;">
-            <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--accent);">Preview Latest Formatted Alert Email</summary>
-            <div id="depot-email-preview" class="email-preview-frame"></div>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== TAB 3: FICTITIOUS DEPOT BACKTEST ==================== -->
-    <section id="backtest-view-root" class="hidden-panel" aria-label="Historical Fictitious Depot Backtest">
-      <div class="bt-toolbar" style="flex-direction:column;align-items:stretch;gap:11px;">
-        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
-            <span style="font-size:0.79rem;font-weight:700;color:var(--text-primary);">Selection Bucket (Zero Hindsight):</span>
-            <div class="preset-pills" id="bt-universe-pills">
-              <button type="button" class="pill active" data-universe="sp100_2021" title="Exact 98 S&amp;P 100 US mega-caps as of Nov 30, 2021 — includes fallen angels (INTC, PYPL, BA, DIS, PFE) and excludes hindsight 2026 entrants (PLTR, MU, AMD)">Nov 2021 Mega-Caps (S&amp;P 100)</button>
-              <button type="button" class="pill" data-universe="nyse_2021" title="All 341 NYSE-listed S&amp;P 500 stocks as of Nov 30, 2021 across all sectors, including bankruptcies (First Republic Bank -&gt; $0)">Nov 2021 NYSE Bucket (341 Stocks)</button>
-              <button type="button" class="pill" data-universe="watchlist_2026" title="Today's 2026 watchlist backtested to 2021 — shown side-by-side to illustrate survivorship bias">2026 Watchlist (Biased Ref.)</button>
-            </div>
-          </div>
-
-          <div class="preset-pills" id="bt-horizon-pills">
-            <button type="button" class="pill active" data-horizon="5y">5 Years (Nov 2021–2026)</button>
-            <button type="button" class="pill" data-horizon="3y">3 Years (Nov 2023–2026)</button>
-            <button type="button" class="pill" data-horizon="1y">1 Year (Nov 2025–2026)</button>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-top:9px;border-top:1px solid var(--border-subtle);">
-          <div class="bt-capital-group">
-            <label for="bt-capital-input">Starting Fictitious Depot ($):</label>
-            <input id="bt-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
-            <span id="bt-universe-meta" style="font-size:0.76rem;color:var(--text-muted);">Survivorship-free Nov 2021 cohort · SEC filings gated by filing date · 0.10% trading fee</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 5 Strategy Comparison Scorecards -->
-      <div id="bt-kpi-grid" class="bt-kpi-grid"></div>
-
-      <!-- Equity Curve Chart -->
-      <div class="bt-chart-card">
-        <div class="chart-legend" style="margin-bottom:10px;">
-          <div class="legend-items" style="flex-wrap:wrap;gap:14px;">
-            <span><i class="legend-swatch" style="background:var(--sig-dip-dot)"></i><strong>⚡ Daily Dip-Buyer</strong> (Oversold GARP Entries)</span>
-            <span><i class="legend-swatch" style="background:var(--accent)"></i><strong>All Buys Depot</strong> (Monthly)</span>
-            <span><i class="legend-swatch" style="background:var(--sig-strong-dot)"></i><strong>Strong Buy Only</strong></span>
-            <span><i class="legend-swatch" style="background:var(--sig-hold-dot)"></i><strong>Equal-Weight Bucket</strong></span>
-            <span><i class="legend-swatch" style="background:var(--text-muted)"></i><strong>S&amp;P 500 (SPY)</strong></span>
-          </div>
-          <span id="bt-chart-readout" class="tabular">Hover chart to inspect monthly depot value</span>
-        </div>
-        <canvas id="bt-equity-canvas"></canvas>
-      </div>
-
-      <!-- Calendar Year Table + Historical Rebalance Checkpoints -->
-      <div class="bt-two-col">
-        <div class="bt-panel-box">
-          <h3>Calendar Year Returns (2022 Bear Market → 2026 YTD)</h3>
-          <div class="table-scroll">
-            <table class="stock-table" id="bt-yearly-table">
-              <thead>
-                <tr>
-                  <th>Year</th>
-                  <th class="num">⚡ Daily Dip</th>
-                  <th class="num">All Buys</th>
-                  <th class="num">Strong Buy</th>
-                  <th class="num">Equal Univ.</th>
-                  <th class="num">S&amp;P 500</th>
-                  <th class="num">Avoid Basket</th>
-                </tr>
-              </thead>
-              <tbody id="bt-yearly-tbody"></tbody>
-            </table>
-          </div>
-          <p id="bt-methodology-note" style="margin:12px 0 0;font-size:0.76rem;color:var(--text-muted);line-height:1.45;"></p>
-        </div>
-
-        <div class="bt-panel-box">
-          <h3>Historical Quarterly Rebalance Log (Point-in-Time SEC Filings)</h3>
-          <div id="bt-checkpoints-list" class="bt-checkpoint-list"></div>
-        </div>
-      </div>
-    </section>
+      <!-- Optional Visual Cards Grid -->
+      <div id="cards-view-container" class="cards-grid"></div>
+    </main>
 
     <footer class="disclaimer-footer">
-      <span>Data sourced from Yahoo Finance &amp; official SEC EDGAR XBRL filings (data.sec.gov). Automatically refreshed every trading day.</span>
-      <span>Historical backtests are hypothetical and do not guarantee future returns — not personalized financial advice.</span>
+      <span>Data sourced from Yahoo Finance &amp; live financial news RSS feeds. Automatically refreshed twice every trading day.</span>
+      <span>Reasonable price ranges are quantitative fundamental estimates, not personalized investment advice.</span>
     </footer>
   </div>
 
@@ -458,11 +206,6 @@
   </aside>
 
   <script src="data/stocks_snapshot.js"></script>
-  <script src="data/backtest_snapshot.js"></script>
-  <script src="data/four_rule_depot_snapshot.js"></script>
-  <script src="data/alert_snapshot.js"></script>
   <script src="app.js"></script>
-  <script src="backtest_ui.js"></script>
-  <script src="depot_ui.js"></script>
 </body>
 </html>

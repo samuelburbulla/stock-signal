@@ -1,16 +1,15 @@
-# Stock Signal — Daily Stock Valuation & Buy-Readiness Screener
+# Stock Signal — Good vs. Expensive Stocks & Reasonable Price Ranges
 
-An effortless, daily-updated stock screener that shows **at a glance** which stocks are **Strong Buys**, **Good Buys**, **Holds**, or **Expensive / Avoids** — backed by live Yahoo Finance valuation multiples, profitability, growth, Wall Street upside, and 14-day RSI entry timing.
+A clean, daily-updated stock screener that shows **at a glance** which stocks are **Strong Buys**, **Good Buys**, **Holds**, or **Expensive / Avoids** — complete with per-stock **Cheap · Fair · Expensive** price ranges and automatic **Falling-Knife & Governance-Shock** detection.
 
-## How the Buy Score (1–99) Works
+## How Each Stock Is Evaluated
 
-Each stock is scored across 5 traffic-light indicators:
-
-1. **Valuation (35%)** — Forward P/E, PEG Ratio (P/E vs. expected growth), Free Cash Flow Yield (or Price/Book for banks), and EV/EBITDA. *Strict valuation guardrails prevent great companies at overpriced multiples from getting a "Buy" badge.*
-2. **Quality & Cash (20%)** — Operating & Net Profit Margins, Return on Equity (ROE), and Net Cash vs. Debt/Equity.
-3. **Growth (20%)** — Year-over-year Revenue Growth and blended EPS Growth.
-4. **Wall St. Upside (15%)** — Margin of safety relative to consensus analyst price targets and ratings.
-5. **Entry Timing (10%)** — 14-day Wilder RSI, distance from 200-day moving average, and pullback from 52-week highs.
+1. **Reasonable Price Range (`Cheap` · `Fair` · `Expensive`)** — Estimates fundamental **Fair Value** by blending growth- and margin-adjusted forward earnings power, Free Cash Flow yield (or Price/Book for banks and mid-cycle EPS for cyclical memory chips), and a fundamental-capped consensus check:
+   - **Cheap (`≤ -18%` below Fair Value)** — Margin-of-safety entry zone
+   - **Fair (`-18%` to `+20%` around Fair Value)** — Reasonable hold/accumulate zone
+   - **Expensive (`≥ +20%` above Fair Value)** — Stretched multiple; capped out of Buy badges
+2. **5-Pillar Buy Score (`1–99`)** — Valuation (`35%`), Quality & Balance Sheet (`20%`), Growth (`20%`), Upside (`15%`), and Entry Timing (`10%`).
+3. **Dip vs. Falling-Knife & Corporate Shock Guardrail (`⚡` vs. `🚨`)** — Distinguishes healthy oversold pullbacks (`⚡ Prime Dip`) from violent multi-moving-average breakdowns (`-24%+` 20-day waterfalls below both 50d and 200d MAs) and live **CEO/founder exits or SEC/DOJ/board investigations** detected from per-ticker news feeds (`🚨 Falling Knife`).
 
 ## Running Locally
 
@@ -20,15 +19,6 @@ Zero third-party Python packages are required (uses Python 3 standard library):
 python3 server.py
 ```
 
-The server:
-- Serves the web app + live API (`/api/stocks`, `/api/refresh`, `/api/add`, `/api/remove`)
-- Runs a background daily scheduler that refreshes valuations automatically after US market close every trading day (21:30 UTC) and whenever cached data is >20 hours old.
-
 ## Automated Cloud Daily Updates (GitHub Actions)
 
-[`.github/workflows/daily-update.yml`](.github/workflows/daily-update.yml) runs `python3 scripts/update_data.py` automatically every weekday at 14:00 UTC and 21:30 UTC and deploys the updated snapshot (`public/data/stocks.json` and `public/data/stocks_snapshot.js`) to GitHub Pages.
-
-## 5-Year Point-in-Time Depot Backtest
-
-[`scripts/run_backtest.py`](scripts/run_backtest.py) simulates a `$10,000` monthly-rebalanced depot over 5 years (`60` monthly rebalances, dividend-reinvested `adjclose`, `0.10%` turnover fee) strictly gated by official SEC EDGAR XBRL `filed <= eval_date` dates to prevent look-ahead bias, writing [`public/data/backtest.json`](public/data/backtest.json) for the interactive **5Y Depot Backtest** (`#backtest`) view.
-
+[`.github/workflows/daily-update.yml`](.github/workflows/daily-update.yml) runs [`scripts/update_data.py`](scripts/update_data.py) every weekday at 14:00 UTC and 21:30 UTC, evaluates optional stock-level email alerts via [`scripts/send_alerts.py`](scripts/send_alerts.py), and publishes `public/` to GitHub Pages.

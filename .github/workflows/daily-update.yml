@@ -36,10 +36,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Fetch latest daily valuations and Buy Scores
+      - name: Fetch latest daily valuations, price ranges, and shock checks
         run: python3 scripts/update_data.py
 
-      - name: Evaluate 4-Rule Depot & Dispatch Signal Email Alerts
+      - name: Evaluate stock signal transitions & dispatch optional email alerts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -59,13 +59,13 @@ jobs:
             python3 scripts/send_alerts.py
           fi
 
-      - name: Commit updated snapshot & depot state to main (on scheduled or manual runs)
+      - name: Commit updated stock snapshot to main (on scheduled or manual runs)
         if: github.event_name != 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stocks.json public/data/stocks_snapshot.js public/data/alert_state.json public/data/alert_snapshot.js public/data/four_rule_depot.json public/data/four_rule_depot_snapshot.js
-          git diff --staged --quiet || (git commit -m "chore(data): daily stock valuation & 4-rule depot update $(date -u +'%Y-%m-%d %H:%M UTC')" && git push origin HEAD:main)
+          git add public/data/stocks.json public/data/stocks_snapshot.js public/data/alert_state.json
+          git diff --staged --quiet || (git commit -m "chore(data): daily stock valuation & price range update $(date -u +'%Y-%m-%d %H:%M UTC')" && git push origin HEAD:main)
 
       - name: Publish static site to gh-pages branch
         env:
