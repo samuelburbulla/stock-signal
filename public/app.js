@@ -628,6 +628,7 @@
   }
 
   // --- Open & Render Stock Deep-Dive Drawer ---
+  window.openStockDrawer = openDrawer;
   function openDrawer(symbol) {
     const stock = (state.payload.stocks || []).find((s) => s.symbol === symbol);
     if (!stock) return;

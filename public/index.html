@@ -28,6 +28,7 @@
 
         <nav class="main-nav-tabs" aria-label="Primary Views">
           <button id="nav-tab-screener" type="button" class="main-nav-btn active">Today’s Screener</button>
+          <button id="nav-tab-depot" type="button" class="main-nav-btn">⚡ Current 4-Rule Depot &amp; Alerts</button>
           <button id="nav-tab-backtest" type="button" class="main-nav-btn">5Y Depot Backtest</button>
         </nav>
       </div>
@@ -203,7 +204,171 @@
       </main>
     </div>
 
-    <!-- ==================== TAB 2: FICTITIOUS DEPOT BACKTEST ==================== -->
+    <!-- ==================== TAB 2: CURRENT 4-RULE DEPOT & EMAIL ALERTS ==================== -->
+    <section id="depot-view-root" class="hidden-panel" aria-label="Current 4-Rule Playbook Depot and Email Alerts">
+      <div class="bt-toolbar" style="flex-direction:column;align-items:stretch;gap:12px;">
+        <!-- 4 Rules Strip -->
+        <div class="depot-rules-grid">
+          <div class="depot-rule-chip">
+            <span class="depot-rule-num">1</span>
+            <div>
+              <strong>S&amp;P 100 Mega-Caps Only</strong>
+              <span>Dominant blue chips only — zero mid-cap falling knives</span>
+            </div>
+          </div>
+          <div class="depot-rule-chip">
+            <span class="depot-rule-num">2</span>
+            <div>
+              <strong>Up to 6 Equal Slots · Idle in SPY</strong>
+              <span>Equal weight across active dips; 100% SPY when 0 qualify</span>
+            </div>
+          </div>
+          <div class="depot-rule-chip">
+            <span class="depot-rule-num">3</span>
+            <div>
+              <strong>Buy ⚡ Prime Dip (Max 3/Sector)</strong>
+              <span>Score &ge;64, Val &ge;48 &amp; RSI-14 &le;42 / 20d dip &le;-6%</span>
+            </div>
+          </div>
+          <div class="depot-rule-chip">
+            <span class="depot-rule-num">4</span>
+            <div>
+              <strong>Hold &ge;10d · Sell RSI &ge;72 / Score &lt;50</strong>
+              <span>Also exits on sharp snap-back (5d RSI &ge;78) · 0.10% fee</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-top:9px;border-top:1px solid var(--border-subtle);">
+          <div class="bt-capital-group" style="flex-wrap:wrap;gap:8px;">
+            <label for="depot-capital-input">Starting Depot ($):</label>
+            <input id="depot-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
+            <div class="preset-pills" id="depot-cap-pills">
+              <button type="button" class="pill active" data-cap="10000">$10k</button>
+              <button type="button" class="pill" data-cap="25000">$25k</button>
+              <button type="button" class="pill" data-cap="50000">$50k</button>
+              <button type="button" class="pill" data-cap="100000">$100k</button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+            <span style="font-size:0.78rem;font-weight:600;color:var(--text-secondary);">Horizon:</span>
+            <div class="preset-pills" id="depot-window-pills">
+              <button type="button" class="pill active" data-win="4y">4 Years (Nov 2022–Today)</button>
+              <button type="button" class="pill" data-win="5y">5 Years</button>
+              <button type="button" class="pill" data-win="3y">3 Years</button>
+              <button type="button" class="pill" data-win="2y">2 Years</button>
+              <button type="button" class="pill" data-win="1y">1 Year</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 KPI Scorecards -->
+      <div id="depot-kpi-grid" class="bt-kpi-grid"></div>
+
+      <!-- 4-Rule Depot vs SPY Equity Curve -->
+      <div class="bt-chart-card">
+        <div class="chart-legend" style="margin-bottom:10px;">
+          <div class="legend-items" style="flex-wrap:wrap;gap:14px;">
+            <span><i class="legend-swatch" style="background:var(--sig-dip-dot)"></i><strong>⚡ 4-Rule Playbook Depot</strong> (Survivorship-Free S&amp;P 100 · Net of 0.10% Fee)</span>
+            <span><i class="legend-swatch" style="background:var(--text-muted)"></i><strong>S&amp;P 500 (SPY Total Return)</strong></span>
+          </div>
+          <span id="depot-chart-readout" class="tabular">Hover curve to inspect depot value &amp; profit</span>
+        </div>
+        <canvas id="depot-equity-canvas"></canvas>
+      </div>
+
+      <!-- Current Live 6-Slot Depot Table -->
+      <div class="table-card" style="margin-top:14px;">
+        <div style="padding:13px 16px;border-bottom:1px solid var(--border-subtle);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
+          <div>
+            <h3 style="margin:0;font-size:0.95rem;">📊 Current Live 4-Rule Depot Holdings (6 Equal Slots · Auto-Updated Twice Daily)</h3>
+            <p id="depot-slots-subtitle" style="margin:2px 0 0;font-size:0.77rem;color:var(--text-muted);">Click any stock row to inspect its full valuation &amp; RSI chart.</p>
+          </div>
+          <a href="#email-alerts-box" class="btn btn-primary" style="text-decoration:none;font-size:0.78rem;">🔔 Email Me On Signal Change</a>
+        </div>
+        <div class="table-scroll">
+          <table class="stock-table" id="depot-slots-table">
+            <thead>
+              <tr>
+                <th>Slot</th>
+                <th>Position</th>
+                <th class="num">Slot Value</th>
+                <th class="num">Entry Date &amp; Price</th>
+                <th class="num">Current Price</th>
+                <th class="num">Slot P&amp;L</th>
+                <th class="num">Hold Days</th>
+                <th>Exit Rule Distance (Sell RSI &ge;72 / 5d &ge;78 / Score &lt;50)</th>
+              </tr>
+            </thead>
+            <tbody id="depot-slots-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bottom Two-Column: Closed Trade Ledger + Automated Email Alert Setup -->
+      <div class="bt-two-col" style="margin-top:14px;">
+        <div class="bt-panel-box">
+          <h3>Recent Closed 4-Rule Rotations &amp; Yearly Alpha</h3>
+          <div id="depot-yearly-strip" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+          <div class="table-scroll" style="max-height:420px;overflow-y:auto;">
+            <table class="stock-table">
+              <thead>
+                <tr>
+                  <th>Stock</th>
+                  <th>Entry &rarr; Exit</th>
+                  <th class="num">Days</th>
+                  <th class="num">Return</th>
+                  <th>Exit Trigger</th>
+                </tr>
+              </thead>
+              <tbody id="depot-trades-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bt-panel-box" id="email-alerts-box">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+            <h3 style="margin:0;">🔔 Automated Signal Email Alerts</h3>
+            <span class="dip-pill dip-pullback">● Active · Zero-Spam Mode</span>
+          </div>
+          <p style="margin:0 0 12px;font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            GitHub Actions runs <strong>twice every trading weekday (14:00 &amp; 21:30 UTC)</strong> and emails you <strong>only when a real signal triggers</strong>:
+            a new S&amp;P 100 <b>⚡ Prime Dip Buy</b> or a 6-Slot <b>🔴 Sell / Rotate</b> (<code>14d RSI &ge; 72</code>, <code>5d RSI &ge; 78</code>, or <code>Score &lt; 50</code>).
+          </p>
+
+          <div class="alert-setup-steps">
+            <div class="alert-step-card">
+              <div class="alert-step-title">✓ Mode 1: Instant GitHub Email Relay (Already Active — 0 Keys Needed)</div>
+              <p>Whenever a Buy or Sell rule triggers, the workflow posts to a single <code>🔔 Stock Signal — Live Buy &amp; Exit Alert Stream</code> issue mentioning <code>@samuelburbulla</code>, which GitHub immediately emails straight to your verified GitHub inbox.</p>
+            </div>
+
+            <div class="alert-step-card">
+              <div class="alert-step-title">✉ Mode 2: Direct Rich HTML Email (Gmail / iCloud / GMX / Outlook or Resend)</div>
+              <p>Want standalone HTML tables sent to any custom email address? Add Encrypted Secrets in your repo:</p>
+              <div class="secret-code-row">
+                <code>ALERT_EMAIL_TO</code> <span>Your email (e.g. <code>you@gmail.com</code>)</span>
+              </div>
+              <div class="secret-code-row">
+                <code>SMTP_USER</code> &amp; <code>SMTP_PASS</code> <span>Sender email + App Password (auto-detects Gmail, iCloud, GMX, Web.de, Outlook) — <em>or</em> set <code>RESEND_API_KEY</code></span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+                <a href="https://github.com/samuelburbulla/stock-signal/settings/secrets/actions" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;font-size:0.77rem;">1. Set GitHub Email Secrets &nearr;</a>
+                <a href="https://github.com/samuelburbulla/stock-signal/actions/workflows/daily-update.yml" target="_blank" rel="noopener" class="btn" style="text-decoration:none;font-size:0.77rem;">2. Run Workflow &rarr; Send Test Email &nearr;</a>
+              </div>
+            </div>
+          </div>
+
+          <details style="margin-top:12px;">
+            <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--accent);">Preview Latest Formatted Alert Email</summary>
+            <div id="depot-email-preview" class="email-preview-frame"></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: FICTITIOUS DEPOT BACKTEST ==================== -->
     <section id="backtest-view-root" class="hidden-panel" aria-label="Historical Fictitious Depot Backtest">
       <div class="bt-toolbar" style="flex-direction:column;align-items:stretch;gap:11px;">
         <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">
@@ -294,7 +459,10 @@
 
   <script src="data/stocks_snapshot.js"></script>
   <script src="data/backtest_snapshot.js"></script>
+  <script src="data/four_rule_depot_snapshot.js"></script>
+  <script src="data/alert_snapshot.js"></script>
   <script src="app.js"></script>
   <script src="backtest_ui.js"></script>
+  <script src="depot_ui.js"></script>
 </body>
 </html>

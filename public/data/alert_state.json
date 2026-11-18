@@ -1,0 +1,595 @@
+{
+  "updatedAt": "2026-11-18T12:22:19Z",
+  "lastTradingDate": "2026-11-17",
+  "shouldAlert": false,
+  "summaryCounts": {
+    "newDipBuys": 0,
+    "slotEntries": 0,
+    "slotExits": 0,
+    "watchlistExits": 0,
+    "newStrongBuys": 0,
+    "activeSlotsFilled": 6,
+    "maxSlots": 6
+  },
+  "activeSlots": [
+    {
+      "symbol": "GOOGL",
+      "name": "Alphabet Inc.",
+      "sector": "Communication Services",
+      "currencySymbol": "$",
+      "entryDate": "2026-07-22",
+      "entryPrice": 342.09,
+      "currentPrice": 280.2,
+      "pnlPct": -18.09,
+      "tradingDaysHeld": 84,
+      "entryRsi14": 40.6,
+      "currentRsi14": 32.9,
+      "currentRsi5": 29.6,
+      "currentScore": 76,
+      "verdict": "Good Buy",
+      "forwardPE": 18.48
+    },
+    {
+      "symbol": "GS",
+      "name": "Goldman Sachs Group, Inc. (The)",
+      "sector": "Financial Services",
+      "currencySymbol": "$",
+      "entryDate": "2026-07-29",
+      "entryPrice": 980.75,
+      "currentPrice": 877.52,
+      "pnlPct": -10.53,
+      "tradingDaysHeld": 79,
+      "entryRsi14": 37.7,
+      "currentRsi14": 43.3,
+      "currentRsi5": 33.5,
+      "currentScore": 79,
+      "verdict": "Strong Buy",
+      "forwardPE": 11.82
+    },
+    {
+      "symbol": "BAC",
+      "name": "Bank of America Corporation",
+      "sector": "Financial Services",
+      "currencySymbol": "$",
+      "entryDate": "2026-10-08",
+      "entryPrice": 53.61,
+      "currentPrice": 49.44,
+      "pnlPct": -7.78,
+      "tradingDaysHeld": 29,
+      "entryRsi14": 24.5,
+      "currentRsi14": 37.5,
+      "currentRsi5": 32.8,
+      "currentScore": 80,
+      "verdict": "Strong Buy",
+      "forwardPE": 9.54
+    },
+    {
+      "symbol": "MS",
+      "name": "Morgan Stanley",
+      "sector": "Financial Services",
+      "currencySymbol": "$",
+      "entryDate": "2026-10-16",
+      "entryPrice": 180.57,
+      "currentPrice": 183.53,
+      "pnlPct": 1.64,
+      "tradingDaysHeld": 23,
+      "entryRsi14": 25.4,
+      "currentRsi14": 44.6,
+      "currentRsi5": 36.6,
+      "currentScore": 69,
+      "verdict": "Good Buy",
+      "forwardPE": 13.43
+    },
+    {
+      "symbol": "NVDA",
+      "name": "NVIDIA Corporation",
+      "sector": "Technology",
+      "currencySymbol": "$",
+      "entryDate": "2026-10-20",
+      "entryPrice": 216.47,
+      "currentPrice": 155.46,
+      "pnlPct": -28.18,
+      "tradingDaysHeld": 21,
+      "entryRsi14": 40.9,
+      "currentRsi14": 22.5,
+      "currentRsi5": 14.6,
+      "currentScore": 91,
+      "verdict": "Strong Buy",
+      "forwardPE": 9.57
+    },
+    {
+      "symbol": "META",
+      "name": "Meta Platforms, Inc.",
+      "sector": "Communication Services",
+      "currencySymbol": "$",
+      "entryDate": "2026-10-22",
+      "entryPrice": 648.85,
+      "currentPrice": 618.87,
+      "pnlPct": -4.62,
+      "tradingDaysHeld": 19,
+      "entryRsi14": 36.8,
+      "currentRsi14": 42.0,
+      "currentRsi5": 40.6,
+      "currentScore": 84,
+      "verdict": "Strong Buy",
+      "forwardPE": 17.35
+    }
+  ],
+  "latestSignals": {
+    "exitSignals": [],
+    "newDipSignals": [],
+    "slotEntries": [],
+    "watchlistExits": [],
+    "newStrongBuys": []
+  },
+  "alertHistory": [],
+  "latestEmailSubject": "[Stock Signal] 6-Slot Depot Status (2026-11-17): GOOGL, GS, BAC, MS, NVDA, META",
+  "latestEmailPreviewHtml": "<div style=\"font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:680px;margin:0 auto;color:#111827;line-height:1.45;\">\n      <div style=\"padding:16px 20px;background:#0f172a;color:#f8fafc;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center;\">\n        <div>\n          <div style=\"font-size:17px;font-weight:700;\">\u26a1 Stock Signal \u2014 Automated Depot Alert</div>\n          <div style=\"font-size:12px;color:#94a3b8;\">6-Slot S&amp;P 100 Mega-Cap Prime Dip Strategy \u00b7 Market Date 2026-11-17</div>\n        </div>\n      </div>\n      <div style=\"padding:20px;background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;\">\n        <div style=\"padding:10px 12px;margin-bottom:16px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;font-size:12px;color:#0f766e;\"><strong>Live Depot Snapshot:</strong> No new buy/exit transitions occurred in this check \u2014 showing your current 6-Slot Mega-Cap Prime Dip positions.</div>\n        \n        \n        <h3 style=\"margin:0 0 8px;font-size:14px;color:#1e293b;\">\ud83d\udcca Active 6-Slot Mega-Cap Depot (6/6 Slots Filled)</h3>\n        <table style=\"width:100%;border-collapse:collapse;font-size:12px;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;\">\n          <thead>\n            <tr style=\"background:#f9fafb;color:#4b5563;font-size:11px;text-transform:uppercase;\">\n              <th style=\"padding:7px 10px;text-align:left;\">Slot</th>\n              <th style=\"padding:7px 10px;text-align:left;\">Ticker</th>\n              <th style=\"padding:7px 10px;text-align:right;\">Entry</th>\n              <th style=\"padding:7px 10px;text-align:right;\">Now</th>\n              <th style=\"padding:7px 10px;text-align:right;\">P&amp;L</th>\n              <th style=\"padding:7px 10px;text-align:right;\">14d RSI</th>\n              <th style=\"padding:7px 10px;text-align:right;\">Score</th>\n            </tr>\n          </thead>\n          <tbody>\n          <tr>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#6b7280;\">#1</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;\"><strong style=\"font-family:monospace;\">GOOGL</strong> <span style=\"font-size:11px;color:#6b7280;\">(Communication Services)</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">$342.09</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;\">$280.20</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;color:#b91c1c;\">-18.1%</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">32.9 <span style=\"color:#9ca3af;font-size:11px;\">/ 72</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">76 <span style=\"color:#9ca3af;font-size:11px;\">/ 50</span></td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#6b7280;\">#2</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;\"><strong style=\"font-family:monospace;\">GS</strong> <span style=\"font-size:11px;color:#6b7280;\">(Financial Services)</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">$980.75</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;\">$877.52</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;color:#b91c1c;\">-10.5%</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">43.3 <span style=\"color:#9ca3af;font-size:11px;\">/ 72</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">79 <span style=\"color:#9ca3af;font-size:11px;\">/ 50</span></td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#6b7280;\">#3</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;\"><strong style=\"font-family:monospace;\">BAC</strong> <span style=\"font-size:11px;color:#6b7280;\">(Financial Services)</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">$53.61</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;\">$49.44</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;color:#b91c1c;\">-7.8%</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">37.5 <span style=\"color:#9ca3af;font-size:11px;\">/ 72</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">80 <span style=\"color:#9ca3af;font-size:11px;\">/ 50</span></td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#6b7280;\">#4</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;\"><strong style=\"font-family:monospace;\">MS</strong> <span style=\"font-size:11px;color:#6b7280;\">(Financial Services)</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">$180.57</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;\">$183.53</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;color:#15803d;\">+1.6%</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">44.6 <span style=\"color:#9ca3af;font-size:11px;\">/ 72</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">69 <span style=\"color:#9ca3af;font-size:11px;\">/ 50</span></td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#6b7280;\">#5</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;\"><strong style=\"font-family:monospace;\">NVDA</strong> <span style=\"font-size:11px;color:#6b7280;\">(Technology)</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">$216.47</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;\">$155.46</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;color:#b91c1c;\">-28.2%</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">22.5 <span style=\"color:#9ca3af;font-size:11px;\">/ 72</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">91 <span style=\"color:#9ca3af;font-size:11px;\">/ 50</span></td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;font-family:monospace;color:#6b7280;\">#6</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;\"><strong style=\"font-family:monospace;\">META</strong> <span style=\"font-size:11px;color:#6b7280;\">(Communication Services)</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">$648.85</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;\">$618.87</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;font-weight:600;color:#b91c1c;\">-4.6%</td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">42.0 <span style=\"color:#9ca3af;font-size:11px;\">/ 72</span></td>\n            <td style=\"padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:right;font-family:monospace;\">84 <span style=\"color:#9ca3af;font-size:11px;\">/ 50</span></td>\n          </tr></tbody>\n        </table>\n        <div style=\"margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;display:flex;justify-content:space-between;\">\n          <span>Rules: Buy S&amp;P 100 Prime Dip \u00b7 Hold &ge;10d \u00b7 Sell at RSI &ge;72 or Score &lt;50</span>\n          <a href=\"https://samuelburbulla.github.io/stock-signal/#alerts\" style=\"color:#0f766e;font-weight:600;text-decoration:none;\">Open Live Screener &rarr;</a>\n        </div>\n      </div>\n    </div>",
+  "latestMarkdownBody": "### \ud83d\udd14 Stock Signal Alert \u2014 `2026-11-17`\nStrategy: **6-Slot S&P 100 Mega-Cap `\u26a1 Prime Dip` Rotation** ([Open Live Dashboard](https://samuelburbulla.github.io/stock-signal/#alerts))\n\n> **Live Status Snapshot / Test Alert**: No new slot transitions occurred in this check; below is your current 6-slot depot status.\n\n#### \ud83d\udcca Current 6-Slot Mega-Cap Depot (6/6 Slots Active)\n| Slot | Ticker | Entry Price | Current | P&L | 14d RSI (Sell >=72) | Score (Sell <50) |\n| :---: | :--- | ---: | ---: | ---: | :---: | :---: |\n| #1 | **GOOGL** (Communicatio) | `$342.09` | `$280.20` | `-18.1%` | `32.9` | `76/99` |\n| #2 | **GS** (Financial Se) | `$980.75` | `$877.52` | `-10.5%` | `43.3` | `79/99` |\n| #3 | **BAC** (Financial Se) | `$53.61` | `$49.44` | `-7.8%` | `37.5` | `80/99` |\n| #4 | **MS** (Financial Se) | `$180.57` | `$183.53` | `+1.6%` | `44.6` | `69/99` |\n| #5 | **NVDA** (Technology) | `$216.47` | `$155.46` | `-28.2%` | `22.5` | `91/99` |\n| #6 | **META** (Communicatio) | `$648.85` | `$618.87` | `-4.6%` | `42.0` | `84/99` |",
+  "prevSignals": {
+    "MU": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 96,
+      "rsi14": 37.5,
+      "rsi5": 33.7,
+      "price": 712.42
+    },
+    "TSM": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 92,
+      "rsi14": 35.7,
+      "rsi5": 26.4,
+      "price": 359.69
+    },
+    "NVDA": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 91,
+      "rsi14": 22.5,
+      "rsi5": 14.6,
+      "price": 155.46
+    },
+    "CRM": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 87,
+      "rsi14": 25.7,
+      "rsi5": 10.8,
+      "price": 194.52
+    },
+    "NFLX": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 86,
+      "rsi14": 33.0,
+      "rsi5": 21.8,
+      "price": 59.68
+    },
+    "AVGO": {
+      "dipKey": "pullback",
+      "verdictKey": "strong_buy",
+      "score": 85,
+      "rsi14": 51.4,
+      "rsi5": 54.3,
+      "price": 341.6
+    },
+    "ASML": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 85,
+      "rsi14": 34.8,
+      "rsi5": 25.9,
+      "price": 1383.11
+    },
+    "META": {
+      "dipKey": "pullback",
+      "verdictKey": "strong_buy",
+      "score": 84,
+      "rsi14": 42.0,
+      "rsi5": 40.6,
+      "price": 618.87
+    },
+    "ADBE": {
+      "dipKey": "pullback",
+      "verdictKey": "strong_buy",
+      "score": 84,
+      "rsi14": 41.5,
+      "rsi5": 33.4,
+      "price": 235.55
+    },
+    "ORCL": {
+      "dipKey": "pullback",
+      "verdictKey": "strong_buy",
+      "score": 83,
+      "rsi14": 40.0,
+      "rsi5": 31.5,
+      "price": 115.0
+    },
+    "TMUS": {
+      "dipKey": "neutral",
+      "verdictKey": "strong_buy",
+      "score": 82,
+      "rsi14": 56.7,
+      "rsi5": 55.4,
+      "price": 167.9
+    },
+    "NOW": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 81,
+      "rsi14": 26.7,
+      "rsi5": 17.8,
+      "price": 92.9
+    },
+    "CVX": {
+      "dipKey": "pullback",
+      "verdictKey": "strong_buy",
+      "score": 81,
+      "rsi14": 47.1,
+      "rsi5": 45.4,
+      "price": 216.13
+    },
+    "BAC": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 80,
+      "rsi14": 37.5,
+      "rsi5": 32.8,
+      "price": 49.44
+    },
+    "GS": {
+      "dipKey": "pullback",
+      "verdictKey": "strong_buy",
+      "score": 79,
+      "rsi14": 43.3,
+      "rsi5": 33.5,
+      "price": 877.52
+    },
+    "CAT": {
+      "dipKey": "prime_dip",
+      "verdictKey": "strong_buy",
+      "score": 79,
+      "rsi14": 31.4,
+      "rsi5": 31.5,
+      "price": 570.79
+    },
+    "GOOGL": {
+      "dipKey": "prime_dip",
+      "verdictKey": "buy",
+      "score": 76,
+      "rsi14": 32.9,
+      "rsi5": 29.6,
+      "price": 280.2
+    },
+    "XOM": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 76,
+      "rsi14": 43.7,
+      "rsi5": 40.0,
+      "price": 167.21
+    },
+    "MSFT": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 75,
+      "rsi14": 41.9,
+      "rsi5": 27.2,
+      "price": 506.24
+    },
+    "ABBV": {
+      "dipKey": "neutral",
+      "verdictKey": "buy",
+      "score": 75,
+      "rsi14": 58.7,
+      "rsi5": 48.1,
+      "price": 292.82
+    },
+    "AMD": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 72,
+      "rsi14": 46.6,
+      "rsi5": 44.3,
+      "price": 503.41
+    },
+    "SAP": {
+      "dipKey": "prime_dip",
+      "verdictKey": "buy",
+      "score": 72,
+      "rsi14": 41.4,
+      "rsi5": 19.9,
+      "price": 222.51
+    },
+    "BLK": {
+      "dipKey": "neutral",
+      "verdictKey": "buy",
+      "score": 72,
+      "rsi14": 53.2,
+      "rsi5": 37.5,
+      "price": 1180.67
+    },
+    "JPM": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 71,
+      "rsi14": 42.0,
+      "rsi5": 28.4,
+      "price": 329.96
+    },
+    "SPGI": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 70,
+      "rsi14": 49.1,
+      "rsi5": 26.4,
+      "price": 452.35
+    },
+    "UNH": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 70,
+      "rsi14": 42.9,
+      "rsi5": 29.5,
+      "price": 389.68
+    },
+    "MS": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 69,
+      "rsi14": 44.6,
+      "rsi5": 36.6,
+      "price": 183.53
+    },
+    "V": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 69,
+      "rsi14": 54.4,
+      "rsi5": 37.9,
+      "price": 416.77
+    },
+    "AXP": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 68,
+      "rsi14": 46.0,
+      "rsi5": 32.1,
+      "price": 315.78
+    },
+    "LLY": {
+      "dipKey": "neutral",
+      "verdictKey": "buy",
+      "score": 68,
+      "rsi14": 63.0,
+      "rsi5": 50.9,
+      "price": 1415.55
+    },
+    "MA": {
+      "dipKey": "neutral",
+      "verdictKey": "buy",
+      "score": 67,
+      "rsi14": 55.4,
+      "rsi5": 38.1,
+      "price": 645.73
+    },
+    "UBER": {
+      "dipKey": "neutral",
+      "verdictKey": "buy",
+      "score": 66,
+      "rsi14": 49.1,
+      "rsi5": 44.0,
+      "price": 68.81
+    },
+    "QCOM": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 66,
+      "rsi14": 44.7,
+      "rsi5": 37.6,
+      "price": 166.67
+    },
+    "DIS": {
+      "dipKey": "neutral",
+      "verdictKey": "buy",
+      "score": 66,
+      "rsi14": 59.0,
+      "rsi5": 42.8,
+      "price": 116.94
+    },
+    "MRK": {
+      "dipKey": "pullback",
+      "verdictKey": "buy",
+      "score": 65,
+      "rsi14": 45.0,
+      "rsi5": 29.8,
+      "price": 143.37
+    },
+    "PEP": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 64,
+      "rsi14": 56.7,
+      "rsi5": 45.7,
+      "price": 142.02
+    },
+    "AMZN": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 63,
+      "rsi14": 49.7,
+      "rsi5": 38.7,
+      "price": 257.89
+    },
+    "SPCX": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 63,
+      "rsi14": 49.0,
+      "rsi5": 57.8,
+      "price": 141.7
+    },
+    "SHOP": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 63,
+      "rsi14": 39.0,
+      "rsi5": 29.3,
+      "price": 141.9
+    },
+    "PLTR": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 62,
+      "rsi14": 32.8,
+      "rsi5": 22.4,
+      "price": 156.56
+    },
+    "MCD": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 62,
+      "rsi14": 64.9,
+      "rsi5": 59.6,
+      "price": 275.82
+    },
+    "ISRG": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 62,
+      "rsi14": 46.4,
+      "rsi5": 29.8,
+      "price": 430.53
+    },
+    "NVO": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 62,
+      "rsi14": 52.1,
+      "rsi5": 46.0,
+      "price": 40.7
+    },
+    "SPY": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 61,
+      "rsi14": 37.5,
+      "rsi5": 27.5,
+      "price": 732.44
+    },
+    "HD": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 59,
+      "rsi14": 55.3,
+      "rsi5": 34.6,
+      "price": 339.01
+    },
+    "GE": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 57,
+      "rsi14": 54.0,
+      "rsi5": 47.7,
+      "price": 326.4
+    },
+    "AAPL": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 56,
+      "rsi14": 56.1,
+      "rsi5": 53.1,
+      "price": 351.91
+    },
+    "SBUX": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 55,
+      "rsi14": 58.1,
+      "rsi5": 50.5,
+      "price": 107.49
+    },
+    "ANT": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 53,
+      "rsi14": 55.0,
+      "rsi5": null,
+      "price": 78.0
+    },
+    "SPOT": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 53,
+      "rsi14": 58.2,
+      "rsi5": 47.5,
+      "price": 602.01
+    },
+    "JNJ": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 53,
+      "rsi14": 56.4,
+      "rsi5": 46.4,
+      "price": 278.7
+    },
+    "INTC": {
+      "dipKey": "pullback",
+      "verdictKey": "hold",
+      "score": 52,
+      "rsi14": 29.7,
+      "rsi5": 28.4,
+      "price": 55.17
+    },
+    "KO": {
+      "dipKey": "neutral",
+      "verdictKey": "hold",
+      "score": 51,
+      "rsi14": 69.5,
+      "rsi5": 71.2,
+      "price": 98.79
+    },
+    "NKE": {
+      "dipKey": "falling_knife",
+      "verdictKey": "avoid",
+      "score": 44,
+      "rsi14": 40.3,
+      "rsi5": 23.6,
+      "price": 35.85
+    },
+    "COST": {
+      "dipKey": "overheated",
+      "verdictKey": "avoid",
+      "score": 42,
+      "rsi14": 75.3,
+      "rsi5": 80.9,
+      "price": 1110.08
+    },
+    "WMT": {
+      "dipKey": "neutral",
+      "verdictKey": "avoid",
+      "score": 41,
+      "rsi14": 65.2,
+      "rsi5": 60.9,
+      "price": 127.52
+    },
+    "TSLA": {
+      "dipKey": "neutral",
+      "verdictKey": "avoid",
+      "score": 40,
+      "rsi14": 49.6,
+      "rsi5": 45.0,
+      "price": 380.11
+    },
+    "BRK-B": {
+      "dipKey": "overheated",
+      "verdictKey": "avoid",
+      "score": 38,
+      "rsi14": 73.1,
+      "rsi5": 62.7,
+      "price": 586.76
+    }
+  }
+}

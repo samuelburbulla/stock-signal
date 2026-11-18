@@ -6,6 +6,12 @@ on:
     - cron: '0 14 * * 1-5'
     - cron: '30 21 * * 1-5'
   workflow_dispatch:
+    inputs:
+      force_send_email:
+        description: 'Send immediate test / status email even if no new signal changed'
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -16,6 +22,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   update-and-deploy:
@@ -32,13 +39,33 @@ jobs:
       - name: Fetch latest daily valuations and Buy Scores
         run: python3 scripts/update_data.py
 
-      - name: Commit updated snapshot to main (on scheduled or manual runs)
+      - name: Evaluate 4-Rule Depot & Dispatch Signal Email Alerts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          GITHUB_ISSUE_ALERTS: ${{ vars.GITHUB_ISSUE_ALERTS }}
+          FORCE_SEND_EMAIL: ${{ inputs.force_send_email }}
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            python3 scripts/send_alerts.py --no-send
+          else
+            python3 scripts/send_alerts.py
+          fi
+
+      - name: Commit updated snapshot & depot state to main (on scheduled or manual runs)
         if: github.event_name != 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stocks.json public/data/stocks_snapshot.js
-          git diff --staged --quiet || (git commit -m "chore(data): daily stock valuation snapshot $(date -u +'%Y-%m-%d %H:%M UTC')" && git push origin HEAD:main)
+          git add public/data/stocks.json public/data/stocks_snapshot.js public/data/alert_state.json public/data/alert_snapshot.js public/data/four_rule_depot.json public/data/four_rule_depot_snapshot.js
+          git diff --staged --quiet || (git commit -m "chore(data): daily stock valuation & 4-rule depot update $(date -u +'%Y-%m-%d %H:%M UTC')" && git push origin HEAD:main)
 
       - name: Publish static site to gh-pages branch
         env:

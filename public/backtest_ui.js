@@ -345,23 +345,52 @@
     }
   }
 
+  function resolveTabFromHash(hash) {
+    if (hash === "#backtest") return "backtest";
+    if (hash === "#depot" || hash === "#alerts" || hash === "#email-alerts-box") return "depot";
+    return "screener";
+  }
+
   function switchMainTab(tab) {
     btState.activeTab = tab;
+    const isScreener = tab === "screener";
+    const isDepot = tab === "depot";
     const isBt = tab === "backtest";
-    document.getElementById("screener-view-root").classList.toggle("hidden-panel", isBt);
-    document.getElementById("backtest-view-root").classList.toggle("hidden-panel", !isBt);
-    document.getElementById("nav-tab-screener").classList.toggle("active", !isBt);
-    document.getElementById("nav-tab-backtest").classList.toggle("active", isBt);
+
+    const screenerEl = document.getElementById("screener-view-root");
+    const depotEl = document.getElementById("depot-view-root");
+    const btEl = document.getElementById("backtest-view-root");
+    if (screenerEl) screenerEl.classList.toggle("hidden-panel", !isScreener);
+    if (depotEl) depotEl.classList.toggle("hidden-panel", !isDepot);
+    if (btEl) btEl.classList.toggle("hidden-panel", !isBt);
+
+    const navScreener = document.getElementById("nav-tab-screener");
+    const navDepot = document.getElementById("nav-tab-depot");
+    const navBt = document.getElementById("nav-tab-backtest");
+    if (navScreener) navScreener.classList.toggle("active", isScreener);
+    if (navDepot) navDepot.classList.toggle("active", isDepot);
+    if (navBt) navBt.classList.toggle("active", isBt);
+
     if (isBt) {
       requestAnimationFrame(drawEquityChart);
+    } else if (isDepot && typeof window.renderFourRuleDepot === "function") {
+      requestAnimationFrame(() => window.renderFourRuleDepot());
     }
   }
+  window.switchMainTab = switchMainTab;
 
   async function initBacktest() {
     document.getElementById("nav-tab-screener").addEventListener("click", () => {
       history.replaceState(null, "", "#screener");
       switchMainTab("screener");
     });
+    const navDepotBtn = document.getElementById("nav-tab-depot");
+    if (navDepotBtn) {
+      navDepotBtn.addEventListener("click", () => {
+        history.replaceState(null, "", "#depot");
+        switchMainTab("depot");
+      });
+    }
     document.getElementById("nav-tab-backtest").addEventListener("click", () => {
       history.replaceState(null, "", "#backtest");
       switchMainTab("backtest");
@@ -402,11 +431,16 @@
     document.getElementById("theme-toggle-btn").addEventListener("click", () => {
       if (btState.activeTab === "backtest") {
         requestAnimationFrame(drawEquityChart);
+      } else if (btState.activeTab === "depot" && typeof window.drawFourRuleChart === "function") {
+        requestAnimationFrame(() => window.drawFourRuleChart());
       }
     });
 
     window.addEventListener("resize", () => {
       if (btState.activeTab === "backtest") drawEquityChart();
+      if (btState.activeTab === "depot" && typeof window.drawFourRuleChart === "function") {
+        window.drawFourRuleChart();
+      }
     });
 
     // Always fetch fresh backtest.json when available so latest multi-universe payload loads
@@ -416,11 +450,23 @@
     } catch (_) {}
 
     renderBacktestAll();
-    if (window.location.hash === "#backtest") {
-      switchMainTab("backtest");
+    const initialTab = resolveTabFromHash(window.location.hash);
+    if (initialTab !== "screener") {
+      switchMainTab(initialTab);
+      if (window.location.hash === "#email-alerts-box" || window.location.hash === "#alerts") {
+        setTimeout(() => {
+          const box = document.getElementById("email-alerts-box");
+          if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
+      }
     }
     window.addEventListener("hashchange", () => {
-      switchMainTab(window.location.hash === "#backtest" ? "backtest" : "screener");
+      const nextTab = resolveTabFromHash(window.location.hash);
+      switchMainTab(nextTab);
+      if (window.location.hash === "#email-alerts-box" || window.location.hash === "#alerts") {
+        const box = document.getElementById("email-alerts-box");
+        if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
   }
 
