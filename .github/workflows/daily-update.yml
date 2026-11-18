@@ -1,0 +1,54 @@
+name: Daily Stock Valuation Update & Deploy
+
+on:
+  schedule:
+    # Twice every trading weekday: 14:00 UTC (US open / EU afternoon) & 21:30 UTC (after US close)
+    - cron: '0 14 * * 1-5'
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/**'
+      - 'public/**'
+      - '.github/workflows/daily-update.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch latest daily valuations and Buy Scores
+        run: python3 scripts/update_data.py
+
+      - name: Commit updated snapshot to main (on scheduled or manual runs)
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/stocks.json public/data/stocks_snapshot.js
+          git diff --staged --quiet || (git commit -m "chore(data): daily stock valuation snapshot $(date -u +'%Y-%m-%d %H:%M UTC')" && git push origin HEAD:main)
+
+      - name: Publish static site to gh-pages branch
+        run: |
+          DEPLOY_DIR=$(mktemp -d)
+          cp -R public/. "$DEPLOY_DIR/"
+          touch "$DEPLOY_DIR/.nojekyll"
+          cd "$DEPLOY_DIR"
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy: stock-signal $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
