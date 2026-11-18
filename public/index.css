@@ -310,7 +310,7 @@ body {
 
 .signal-strip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
@@ -1160,7 +1160,7 @@ body {
 .bt-kpi-grid {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1176,7 +1176,8 @@ body {
 }
 
 .bt-kpi-card.featured {
-  border-color: var(--accent);
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.28);
 }
 
 .bt-kpi-title {
@@ -1273,11 +1274,107 @@ body {
   border: 1px solid var(--border-subtle);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1180px) {
   .bt-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+@media (max-width: 1024px) {
   .bt-two-col {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 680px) {
+  .bt-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ==========================================================================
+   Daily Dip Signal Pills & Drawer Callout
+   ========================================================================== */
+
+:root {
+  --sig-dip-dot: #7c3aed;
+  --sig-dip-bg: rgba(124, 58, 237, 0.11);
+  --sig-dip-fg: #6d28d9;
+  --sig-dip-border: rgba(124, 58, 237, 0.28);
+}
+
+[data-theme="dark"] {
+  --sig-dip-dot: #a78bfa;
+  --sig-dip-bg: rgba(139, 92, 246, 0.2);
+  --sig-dip-fg: #ddd6fe;
+  --sig-dip-border: rgba(167, 139, 250, 0.35);
+}
+
+.dip-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.dip-prime_dip {
+  background: var(--sig-dip-bg);
+  color: var(--sig-dip-fg);
+  border-color: var(--sig-dip-border);
+  font-weight: 700;
+}
+
+.dip-pullback {
+  background: var(--sig-strong-bg);
+  color: var(--sig-strong-fg);
+}
+
+.dip-overheated {
+  background: var(--sig-hold-bg);
+  color: var(--sig-hold-fg);
+}
+
+.dip-falling_knife {
+  background: var(--sig-avoid-bg);
+  color: var(--sig-avoid-fg);
+}
+
+.dip-neutral {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.dip-callout-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--sig-dip-dot);
+}
+
+.dip-callout-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dip-callout-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+

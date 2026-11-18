@@ -142,13 +142,34 @@
     </svg>`;
   }
 
+  const CLIENT_ALIASES = {
+    SPX: "SPY",
+    "^SPX": "SPY",
+    "^GSPC": "SPY",
+    GSPC: "SPY",
+    SP500: "SPY",
+    "S&P500": "SPY",
+    SPACEX: "SPCX",
+    ANTHROPIC: "ANT",
+  };
+
+  function renderDipBadge(s) {
+    const dk = s.dipKey || "neutral";
+    const lbl = s.dipLabel || "Neutral";
+    const rsn = s.dipReason || "";
+    return `<span class="dip-pill dip-${esc(dk)}" title="${esc(rsn)}">${esc(lbl)}</span>`;
+  }
+
   // --- Filtering & Sorting ---
   function getFilteredStocks() {
     const all = state.payload.stocks || [];
     const q = state.searchQuery.trim().toLowerCase();
+    const aliasSym = q ? CLIENT_ALIASES[q.toUpperCase()] || null : null;
 
     const filtered = all.filter((s) => {
-      if (state.verdictFilter !== "all" && s.verdictKey !== state.verdictFilter) {
+      if (state.verdictFilter === "prime_dip") {
+        if (s.dipKey !== "prime_dip") return false;
+      } else if (state.verdictFilter !== "all" && s.verdictKey !== state.verdictFilter) {
         return false;
       }
       if (state.sectorFilter !== "all" && s.sector !== state.sectorFilter) {
@@ -160,14 +181,15 @@
       if (state.preset === "bargain_growth" && !(s.pegRatio !== null && s.pegRatio > 0 && s.pegRatio <= 1.05)) {
         return false;
       }
-      if (state.preset === "oversold_dips" && !(s.rsi14 !== null && s.rsi14 < 38)) {
+      if (state.preset === "oversold_dips" && !(s.dipKey === "prime_dip" || s.dipKey === "pullback")) {
         return false;
       }
       if (state.preset === "cash_cows" && !(s.fcfYield !== null && s.fcfYield >= 3.5)) {
         return false;
       }
       if (q) {
-        const hay = `${s.symbol} ${s.name} ${s.longName || ""} ${s.sector || ""} ${s.industry || ""}`.toLowerCase();
+        if (aliasSym && s.symbol === aliasSym) return true;
+        const hay = `${s.symbol} ${s.name} ${s.longName || ""} ${s.sector || ""} ${s.industry || ""} ${s.dipLabel || ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -212,6 +234,7 @@
       total: stocks.length,
       strong_buy: stocks.filter((s) => s.verdictKey === "strong_buy").length,
       buy: stocks.filter((s) => s.verdictKey === "buy").length,
+      prime_dip: stocks.filter((s) => s.dipKey === "prime_dip").length,
       hold: stocks.filter((s) => s.verdictKey === "hold").length,
       avoid: stocks.filter((s) => s.verdictKey === "avoid").length,
     };
@@ -219,6 +242,8 @@
     document.getElementById("count-all").textContent = counts.total;
     document.getElementById("count-strong_buy").textContent = counts.strong_buy;
     document.getElementById("count-buy").textContent = counts.buy;
+    const dipCntEl = document.getElementById("count-prime_dip");
+    if (dipCntEl) dipCntEl.textContent = counts.prime_dip;
     document.getElementById("count-hold").textContent = counts.hold;
     document.getElementById("count-avoid").textContent = counts.avoid;
 
@@ -355,8 +380,12 @@
             <span class="sub-val">ROE ${fmtPct(s.roe, false, 0)}</span>
           </td>
           <td class="num tabular">
-            <span class="${clsRsi(s.rsi14)}">${s.rsi14 !== null ? s.rsi14.toFixed(0) : "–"}</span>
-            <span class="sub-val">${rsiTag(s.rsi14)}</span>
+            <div>${renderDipBadge(s)}</div>
+            <span class="sub-val">RSI ${s.rsi14 !== null && s.rsi14 !== undefined ? s.rsi14.toFixed(0) : "–"}${
+              s.dip20dPct !== null && s.dip20dPct !== undefined && s.dip20dPct <= -1.0
+                ? ` · ${fmtPct(s.dip20dPct, true, 0)} 20d`
+                : ""
+            }</span>
           </td>
           <td class="num tabular">
             <span class="${clsUpside(s.targetUpsidePct)}">${fmtPct(s.targetUpsidePct, true, 0)}</span>
@@ -392,9 +421,12 @@
             </div>
           </div>
           <div class="card-summary">${esc(s.summary)}</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            ${renderPillarChips(s.pillars)}
-            ${buildSparklineSvg(s.chart, 92, 26)}
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              ${renderPillarChips(s.pillars)}
+              ${renderDipBadge(s)}
+            </div>
+            ${buildSparklineSvg(s.chart, 84, 24)}
           </div>
           <div class="card-metrics tabular">
             <div>
@@ -658,6 +690,22 @@
         <strong>Bottom Line:</strong> ${esc(stock.summary)}
       </p>
 
+      <div class="dip-callout-box">
+        <div class="dip-callout-head">
+          <span style="font-size:0.82rem;font-weight:700;color:var(--text-primary);">Daily Dip Signal — Is Today a Good Day to Buy?</span>
+          ${renderDipBadge(stock)}
+        </div>
+        <p style="margin:0 0 8px;font-size:0.81rem;color:var(--text-secondary);line-height:1.45;">
+          ${esc(stock.dipReason || "Normal daily momentum range.")}
+        </p>
+        <div class="dip-callout-stats">
+          <span>14d RSI: <strong>${stock.rsi14 !== null && stock.rsi14 !== undefined ? stock.rsi14.toFixed(1) : "–"}</strong></span>
+          <span>5d Fast RSI: <strong>${stock.rsi5 !== null && stock.rsi5 !== undefined ? stock.rsi5.toFixed(1) : "–"}</strong></span>
+          <span>20d High Pullback: <strong>${fmtPct(stock.dip20dPct, true, 1)}</strong></span>
+          <span>5d Change: <strong>${fmtPct(stock.ret5dPct, true, 1)}</strong></span>
+        </div>
+      </div>
+
       <div class="drawer-section">
         <h3>Why Buy vs. What To Watch</h3>
         <div class="flags-grid">
@@ -831,7 +879,7 @@
     const addInput = document.getElementById("add-ticker-input");
     const addBtn = document.getElementById("add-ticker-btn");
     if (addInput && addBtn) {
-      addInput.placeholder = "Jump to ticker (e.g. NVDA)";
+      addInput.placeholder = "Jump to ticker (ANT, SPX, NVDA)";
       addBtn.textContent = "Inspect";
     }
     try {
@@ -895,14 +943,18 @@
   }
 
   async function addTicker(rawTicker) {
-    const ticker = rawTicker.trim().toUpperCase().replace(/\./g, "-");
+    const cleaned = rawTicker.trim().toUpperCase().replace(/\./g, "-");
+    const ticker = CLIENT_ALIASES[cleaned] || CLIENT_ALIASES[rawTicker.trim().toUpperCase()] || cleaned;
     if (!ticker) return;
     const btn = document.getElementById("add-ticker-btn");
     const input = document.getElementById("add-ticker-input");
 
     // Check if already in current dataset first (instant on GitHub Pages!)
     const existing = (state.payload.stocks || []).find(
-      (s) => s.symbol === ticker || (s.name || "").toUpperCase() === ticker
+      (s) =>
+        s.symbol === ticker ||
+        (s.name || "").toUpperCase().includes(ticker) ||
+        (s.longName || "").toUpperCase().includes(ticker)
     );
     if (!state.hasLiveBackend) {
       if (existing) {
@@ -911,13 +963,14 @@
         state.sectorFilter = "all";
         state.searchQuery = "";
         document.getElementById("filter-search-input").value = "";
+        document.querySelectorAll("#preset-pills .pill").forEach((p) => p.classList.toggle("active", p.dataset.preset === "all"));
         state.highlightedSymbol = existing.symbol;
         input.value = "";
         renderAll();
         openDrawer(existing.symbol);
       } else {
         showBanner(
-          `'${ticker}' isn't in the 54-stock default list yet — add it to public/data/watchlist.json in GitHub and the daily Action will score it automatically!`,
+          `'${ticker}' isn't in the ${(state.payload.stocks || []).length}-stock default list yet — add it to public/data/watchlist.json in GitHub and the daily Action will score it automatically!`,
           false,
           7000
         );

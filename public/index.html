@@ -39,7 +39,7 @@
             class="add-ticker-input"
             type="text"
             maxlength="12"
-            placeholder="Add ticker (e.g. PLTR)"
+            placeholder="Add ticker (e.g. ANT, SPCX, SPY)"
             aria-label="Add stock ticker symbol"
           />
           <button id="add-ticker-btn" type="submit" class="btn btn-primary">+ Track</button>
@@ -80,8 +80,8 @@
         <span>Real cash profit generated per year divided by market cap. <b>4%+</b> means strong cash generation; under 1% means pricey.</span>
       </div>
       <div class="guide-item">
-        <strong>RSI (14-Day) Timing</strong>
-        <span>Measures short-term momentum (0–100). <b>Under 37</b> = pulled back / oversold (often a good entry); <b>over 70</b> = overheated (wait for dip).</span>
+        <strong>Dip Signal &amp; RSI Timing</strong>
+        <span>Flags daily entry windows: <b>⚡ Prime Dip</b> = Buy-rated stock with 14d RSI ≤ 38 or sharp 20d drop; <b>🔥 Overheated</b> = RSI ≥ 70 (wait for pullback).</span>
       </div>
       <div class="guide-item">
         <strong>5 Indicator Bars (V · Q · G · U · T)</strong>
@@ -117,6 +117,14 @@
           <span class="bucket-desc">Score 65–77 · Solid value / GARP</span>
         </button>
 
+        <button id="bucket-prime_dip" type="button" class="signal-bucket" data-verdict="prime_dip">
+          <div class="bucket-top">
+            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-dip-dot)"></span>⚡ Prime Dip Buys</span>
+            <span id="count-prime_dip" class="bucket-count tabular">–</span>
+          </div>
+          <span class="bucket-desc">Buy-rated + acute daily dip</span>
+        </button>
+
         <button id="bucket-hold" type="button" class="signal-bucket" data-verdict="hold">
           <div class="bucket-top">
             <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-hold-dot)"></span>Hold / Watch</span>
@@ -139,8 +147,8 @@
         <div class="preset-pills" id="preset-pills">
           <button id="preset-all" type="button" class="pill active" data-preset="all">All</button>
           <button id="preset-top_buys" type="button" class="pill" data-preset="top_buys">Best Buys Today</button>
+          <button id="preset-oversold_dips" type="button" class="pill" data-preset="oversold_dips">⚡ Prime Dips &amp; Pullbacks</button>
           <button id="preset-bargain_growth" type="button" class="pill" data-preset="bargain_growth">Bargain Growth (PEG ≤ 1.0)</button>
-          <button id="preset-oversold_dips" type="button" class="pill" data-preset="oversold_dips">Oversold Dips (RSI &lt; 38)</button>
           <button id="preset-cash_cows" type="button" class="pill" data-preset="cash_cows">High Cash Flow (FCF ≥ 3.5%)</button>
         </div>
 
@@ -149,7 +157,7 @@
             id="filter-search-input"
             class="search-input"
             type="search"
-            placeholder="Filter symbol or name…"
+            placeholder="Filter symbol or name (ANT, SPX…)"
             aria-label="Filter stocks by ticker or company name"
           />
 
@@ -180,7 +188,7 @@
                   <th class="num sortable" data-sort="fcfYield" title="Free Cash Flow Yield = annual Free Cash Flow / Market Cap (higher = more real cash return).">FCF Yield</th>
                   <th class="num sortable" data-sort="revenueGrowth" title="Year-over-year Revenue Growth and blended EPS Growth">Rev / EPS Gr.</th>
                   <th class="num sortable" data-sort="profitMargin" title="Net Profit Margin & Return on Equity">Net Margin</th>
-                  <th class="num sortable" data-sort="rsi14" title="14-Day Relative Strength Index. Under 37 = oversold pullback; above 70 = overbought.">RSI (14d)</th>
+                  <th class="num sortable" data-sort="dipRank" title="Daily Dip Signal combining 14d RSI, 5d fast RSI, 20-day pullback, and fundamental Buy rating">Dip Signal / RSI</th>
                   <th class="num sortable" data-sort="targetUpsidePct" title="Implied upside or downside to Wall Street consensus mean price target">Target Upside</th>
                   <th class="num" title="Current position within 52-week Low to High price range + 1-year price trend">52W &amp; 1Y Trend</th>
                 </tr>
@@ -201,7 +209,7 @@
         <div class="bt-capital-group">
           <label for="bt-capital-input">Starting Fictitious Depot ($):</label>
           <input id="bt-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
-          <span style="font-size:0.76rem;color:var(--text-muted);">Monthly rebalanced · Dividends reinvested · 0.10% trading fee included</span>
+          <span style="font-size:0.76rem;color:var(--text-muted);">Daily Dip-Buyer + Monthly Depots · Dividends reinvested · 0.10% trading fee included</span>
         </div>
 
         <div class="preset-pills" id="bt-horizon-pills">
@@ -211,15 +219,16 @@
         </div>
       </div>
 
-      <!-- 4 Strategy Comparison Scorecards -->
+      <!-- 5 Strategy Comparison Scorecards -->
       <div id="bt-kpi-grid" class="bt-kpi-grid"></div>
 
       <!-- Equity Curve Chart -->
       <div class="bt-chart-card">
         <div class="chart-legend" style="margin-bottom:10px;">
           <div class="legend-items" style="flex-wrap:wrap;gap:14px;">
-            <span><i class="legend-swatch" style="background:var(--accent)"></i><strong>All Buys Depot</strong> (Strong + Good Buy)</span>
-            <span><i class="legend-swatch" style="background:var(--sig-strong-dot)"></i><strong>Strong Buy Only</strong> (Top Picks)</span>
+            <span><i class="legend-swatch" style="background:var(--sig-dip-dot)"></i><strong>⚡ Daily Dip-Buyer</strong> (Oversold GARP Entries)</span>
+            <span><i class="legend-swatch" style="background:var(--accent)"></i><strong>All Buys Depot</strong> (Monthly)</span>
+            <span><i class="legend-swatch" style="background:var(--sig-strong-dot)"></i><strong>Strong Buy Only</strong></span>
             <span><i class="legend-swatch" style="background:var(--sig-hold-dot)"></i><strong>Equal-Weight Watchlist</strong></span>
             <span><i class="legend-swatch" style="background:var(--text-muted)"></i><strong>S&amp;P 500 (SPY)</strong></span>
           </div>
@@ -237,6 +246,7 @@
               <thead>
                 <tr>
                   <th>Year</th>
+                  <th class="num">⚡ Daily Dip</th>
                   <th class="num">All Buys</th>
                   <th class="num">Strong Buy</th>
                   <th class="num">Equal Univ.</th>

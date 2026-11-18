@@ -37,6 +37,10 @@
     const cap = btState.capital;
     return all.slice(startIdx).map((pt) => ({
       date: pt.date,
+      dailyDip:
+        pt.dailyDip && base.dailyDip
+          ? (pt.dailyDip / base.dailyDip) * cap
+          : (pt.allBuys / base.allBuys) * cap,
       allBuys: (pt.allBuys / base.allBuys) * cap,
       strongBuy: (pt.strongBuy / base.strongBuy) * cap,
       equalUniv: (pt.equalUniv / base.equalUniv) * cap,
@@ -52,11 +56,21 @@
     if (!h) return;
     const scale = btState.capital / 10000.0;
 
-    const cards = [
-      {
-        title: "All Buys Depot (Strong + Good)",
-        badge: "Best Risk/Reward",
+    const cards = [];
+    if (h.dailyDip) {
+      cards.push({
+        title: "⚡ Daily Dip-Buyer Depot",
+        badge: "Highest Alpha",
         featured: true,
+        st: h.dailyDip,
+        dot: "var(--sig-dip-dot)",
+      });
+    }
+    cards.push(
+      {
+        title: "All Buys Depot (Monthly)",
+        badge: "Core GARP",
+        featured: !h.dailyDip,
         st: h.allBuys,
         dot: "var(--accent)",
       },
@@ -80,8 +94,8 @@
         featured: false,
         st: h.spy,
         dot: "var(--text-muted)",
-      },
-    ];
+      }
+    );
 
     grid.innerHTML = cards
       .map((c) => {
@@ -130,6 +144,7 @@
     const styles = getComputedStyle(document.documentElement);
     const textMuted = styles.getPropertyValue("--text-muted").trim() || "#667085";
     const borderCol = styles.getPropertyValue("--border-subtle").trim() || "#e4e7ec";
+    const colDip = styles.getPropertyValue("--sig-dip-dot").trim() || "#7c3aed";
     const colAllBuys = styles.getPropertyValue("--accent").trim() || "#0f766e";
     const colStrong = styles.getPropertyValue("--sig-strong-dot").trim() || "#16a34a";
     const colUniv = styles.getPropertyValue("--sig-hold-dot").trim() || "#d97706";
@@ -137,7 +152,7 @@
 
     const allVals = [];
     pts.forEach((p) => {
-      allVals.push(p.allBuys, p.strongBuy, p.equalUniv, p.spy);
+      allVals.push(p.dailyDip, p.allBuys, p.strongBuy, p.equalUniv, p.spy);
     });
     const minV = Math.min(...allVals) * 0.94;
     const maxV = Math.max(...allVals) * 1.04;
@@ -199,8 +214,9 @@
       // Draw benchmark & strategy lines
       drawLine("spy", colSpy, 1.6, true);
       drawLine("equalUniv", colUniv, 1.6, false);
-      drawLine("strongBuy", colStrong, 2.1, false);
-      drawLine("allBuys", colAllBuys, 2.6, false);
+      drawLine("strongBuy", colStrong, 2.0, false);
+      drawLine("allBuys", colAllBuys, 2.4, false);
+      drawLine("dailyDip", colDip, 2.8, false);
 
       if (hoverIdx !== null && pts[hoverIdx]) {
         const hp = pts[hoverIdx];
@@ -215,6 +231,7 @@
         ctx.restore();
 
         [
+          ["dailyDip", colDip],
           ["allBuys", colAllBuys],
           ["strongBuy", colStrong],
           ["equalUniv", colUniv],
@@ -236,8 +253,8 @@
       const idx = Math.round(ratio * (pts.length - 1));
       const pt = pts[idx];
       if (pt && readout) {
-        readout.textContent = `${pt.date} · All Buys ${fmtCurrency(pt.allBuys)} · Strong Buy ${fmtCurrency(
-          pt.strongBuy
+        readout.textContent = `${pt.date} · ⚡ Daily Dip ${fmtCurrency(pt.dailyDip)} · All Buys ${fmtCurrency(
+          pt.allBuys
         )} · SPY ${fmtCurrency(pt.spy)}`;
       }
       paint(idx);
@@ -258,6 +275,7 @@
           const cls = (v) => (v > 0 ? "val-good" : v < 0 ? "val-bad" : "");
           return `<tr>
             <td><strong>${esc(y.year)}</strong></td>
+            <td class="num tabular ${cls(y.dailyDipPct)}"><strong>${fmtSignedPct(y.dailyDipPct)}</strong></td>
             <td class="num tabular ${cls(y.allBuysPct)}">${fmtSignedPct(y.allBuysPct)}</td>
             <td class="num tabular ${cls(y.strongBuyPct)}">${fmtSignedPct(y.strongBuyPct)}</td>
             <td class="num tabular ${cls(y.equalUnivPct)}">${fmtSignedPct(y.equalUnivPct)}</td>

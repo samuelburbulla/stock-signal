@@ -325,6 +325,23 @@ def compute_rsi_at(closes: list[float], end_idx: int, period: int = 14) -> float
     return 100.0 - (100.0 / (1.0 + avg_g / avg_l))
 
 
+def compute_rsi_series(closes: list[float], period: int = 14) -> list[float | None]:
+    n = len(closes)
+    out: list[float | None] = [None] * n
+    if n < period + 1:
+        return out
+    gains = [max(closes[i] - closes[i - 1], 0.0) for i in range(1, n)]
+    losses = [max(closes[i - 1] - closes[i], 0.0) for i in range(1, n)]
+    ag = sum(gains[:period]) / period
+    al = sum(losses[:period]) / period
+    out[period] = 100.0 if al == 0 else 100.0 - (100.0 / (1.0 + ag / al))
+    for i in range(period, len(gains)):
+        ag = (ag * (period - 1) + gains[i]) / period
+        al = (al * (period - 1) + losses[i]) / period
+        out[i + 1] = 100.0 if al == 0 else 100.0 - (100.0 / (1.0 + ag / al))
+    return out
+
+
 def score_pit_snapshot(m: dict[str, Any]) -> dict[str, Any]:
     """
     Point-in-time historical Stock Signal scorer using the exact same pillar curves
@@ -919,6 +936,231 @@ def run_backtest() -> dict[str, Any]:
             })
 
     # Annual Calendar Returns Breakdown (2022, 2023, 2024, 2025, 2026 YTD)
+    # First run the Daily Dip-Buyer Depot across all daily trading sessions (rebalance_dates[0] -> rebalance_dates[-1])
+    print("Running Daily Dip-Buyer Depot simulation across daily trading sessions...")
+    for sym, st in stocks_db.items():
+        st["rsi14_arr"] = compute_rsi_series(st["closes"], 14)
+        st["rsi5_arr"] = compute_rsi_series(st["closes"], 5)
+        st["date_to_idx"] = {d: i for i, d in enumerate(st["dates"])}
+
+    stock_fund_cache: dict[str, tuple[list[str], dict[Any, Any]]] = {}
+    for sym, st in stocks_db.items():
+        filed_dates = sorted({
+            r["filed"]
+            for key in ("rev", "ni", "op", "ocf", "capex", "shares", "eps", "eq", "cash", "debt")
+            for r in st.get(key, [])
+            if "filed" in r
+        })
+        stock_fund_cache[sym] = (filed_dates, {})
+
+    def eval_daily_pit(sym: str, d_str: str) -> dict[str, Any] | None:
+        st = stocks_db[sym]
+        idx = st["date_to_idx"].get(d_str)
+        if idx is None or idx < 20:
+            return None
+        close_p = st["closes"][idx]
+        adj_p = st["adjs"][idx]
+        if close_p <= 0 or adj_p <= 0:
+            return None
+
+        f_dates, cache_dict = stock_fund_cache[sym]
+        f_pos = bisect.bisect_right(f_dates, d_str) - 1
+        f_key = f_dates[f_pos] if f_pos >= 0 else "NONE"
+        sp_cnt = sum(1 for sp_d, _ in st["splits"] if sp_d <= d_str)
+        ck = (f_key, sp_cnt)
+
+        if ck not in cache_dict:
+            rev_ttm, rev_end = compute_pit_ttm(st["rev"], d_str)
+            ni_ttm, ni_end = compute_pit_ttm(st["ni"], d_str)
+            if ni_ttm is None and rev_ttm is None:
+                cache_dict[ck] = None
+            else:
+                op_ttm, _ = compute_pit_ttm(st["op"], d_str)
+                ocf_ttm, _ = compute_pit_ttm(st["ocf"], d_str)
+                capex_ttm, _ = compute_pit_ttm(st["capex"], d_str)
+                fcf_ttm = (ocf_ttm - abs(capex_ttm)) if (ocf_ttm is not None and capex_ttm is not None) else ocf_ttm
+                rev_growth = None
+                if rev_ttm is not None and rev_end is not None:
+                    rev_prev, _ = compute_pit_ttm(st["rev"], d_str, max_end_date=rev_end - dt.timedelta(days=330))
+                    if rev_prev and rev_prev > 0:
+                        rev_growth = clamp(((rev_ttm - rev_prev) / rev_prev) * 100.0, -70.0, 150.0)
+                eps_growth = None
+                if ni_ttm is not None and ni_end is not None:
+                    ni_prev, _ = compute_pit_ttm(st["ni"], d_str, max_end_date=ni_end - dt.timedelta(days=330))
+                    if ni_prev and ni_prev > 0:
+                        eps_growth = clamp(((ni_ttm - ni_prev) / ni_prev) * 100.0, -75.0, 150.0)
+                    elif ni_prev and ni_prev < 0 < ni_ttm:
+                        eps_growth = 45.0
+
+                raw_sh, sh_end = latest_pit_instant(st["shares"], d_str)
+                adj_sh = None
+                if raw_sh and sh_end and sym not in ("BRK-B", "V"):
+                    norm_sh = (
+                        raw_sh * 1_000_000.0
+                        if (10.0 < raw_sh < 50_000.0)
+                        else (raw_sh * 1_000.0 if (50_000.0 <= raw_sh < 5_000_000.0) else raw_sh)
+                    )
+                    adj_sh = norm_sh * split_factor_after(st["splits"], sh_end)
+                else:
+                    eps_ttm, eps_end = compute_pit_ttm(st["eps"], d_str)
+                    if eps_ttm and eps_end and abs(eps_ttm) > 1e-4 and ni_ttm:
+                        adj_eps = eps_ttm / split_factor_after(st["splits"], eps_end)
+                        if sym == "BRK-B" and abs(adj_eps) > 500:
+                            adj_eps /= 1500.0
+                        adj_sh = abs(ni_ttm / adj_eps)
+                    else:
+                        dp_ttm, _ = compute_pit_ttm(st["div_paid"], d_str)
+                        dps_ttm, dps_end = compute_pit_ttm(st["div_ps"], d_str)
+                        if dp_ttm and dps_ttm and dps_end and dps_ttm > 0.05:
+                            adj_dps = dps_ttm / split_factor_after(st["splits"], dps_end)
+                            adj_sh = abs(dp_ttm) / adj_dps
+
+                eq_val, _ = latest_pit_instant(st["eq"], d_str)
+                cash_val, _ = latest_pit_instant(st["cash"], d_str)
+                debt_val, _ = latest_pit_instant(st["debt"], d_str)
+                cache_dict[ck] = {
+                    "rev_ttm": rev_ttm, "ni_ttm": ni_ttm, "op_ttm": op_ttm, "fcf_ttm": fcf_ttm,
+                    "rev_growth": rev_growth, "eps_growth": eps_growth, "adj_sh": adj_sh,
+                    "eq_val": eq_val, "cash_val": cash_val, "debt_val": debt_val,
+                }
+
+        f = cache_dict[ck]
+        if not f or not f["adj_sh"] or f["adj_sh"] <= 0:
+            return None
+        mcap = f["adj_sh"] * close_p
+        ni_ttm, rev_ttm, fcf_ttm = f["ni_ttm"], f["rev_ttm"], f["fcf_ttm"]
+        pe = (mcap / ni_ttm) if (ni_ttm is not None and abs(ni_ttm) > 0) else None
+        eg, rg = f["eps_growth"], f["rev_growth"]
+        eff_g = (0.6 * eg + 0.4 * rg) if (eg is not None and rg is not None) else (eg if eg is not None else rg)
+        fwd_pe = pe / (1.0 + clamp(eff_g, -25.0, 45.0) / 100.0) if (pe and pe > 0 and eff_g is not None and eff_g > -30) else pe
+        peg = (fwd_pe / eff_g) if (fwd_pe and fwd_pe > 0 and eff_g and eff_g > 3.0) else None
+        fcf_y = (fcf_ttm / mcap * 100.0) if (fcf_ttm is not None and not st["is_financial"]) else None
+        if fcf_y is not None and abs(fcf_y) > 45.0:
+            fcf_y = None
+        eq_val, cash_val, debt_val = f["eq_val"], f["cash_val"], f["debt_val"]
+        pb = (mcap / eq_val) if (eq_val and eq_val > 0) else None
+        roe = (ni_ttm / eq_val * 100.0) if (ni_ttm is not None and eq_val and eq_val > 0) else None
+        dte = (debt_val / eq_val) if (debt_val is not None and eq_val and eq_val > 0) else None
+        nc = ((cash_val - (debt_val or 0.0)) / mcap * 100.0) if cash_val is not None else None
+        op_m = (f["op_ttm"] / rev_ttm * 100.0) if (f["op_ttm"] is not None and rev_ttm and rev_ttm > 0) else None
+        net_m = (ni_ttm / rev_ttm * 100.0) if (ni_ttm is not None and rev_ttm and rev_ttm > 0) else None
+
+        closes = st["closes"]
+        rsi14 = st["rsi14_arr"][idx]
+        rsi5 = st["rsi5_arr"][idx]
+        w20 = closes[max(0, idx - 19): idx + 1]
+        dip20 = (close_p / max(w20) - 1.0) * 100.0 if w20 else 0.0
+        w200 = closes[max(0, idx - 199): idx + 1]
+        ma200 = sum(w200) / len(w200) if len(w200) >= 120 else None
+        dist200 = ((close_p - ma200) / ma200 * 100.0) if ma200 else None
+        w252 = closes[max(0, idx - 251): idx + 1]
+        dd52 = ((close_p - max(w252)) / max(w252) * 100.0) if w252 else 0.0
+
+        scored = score_pit_snapshot({
+            "is_financial": st["is_financial"],
+            "pe": fwd_pe, "peg": peg, "fcfYield": fcf_y, "pb": pb,
+            "opMargin": op_m, "netMargin": net_m, "roe": roe, "debtToEq": dte, "netCashPct": nc,
+            "revGrowth": rg, "epsGrowth": eg,
+            "rsi14": rsi14, "dist200d": dist200, "dd52w": dd52,
+        })
+        return {
+            "symbol": sym, "adj": adj_p, "close": close_p,
+            "rsi14": rsi14, "rsi5": rsi5, "dip20": dip20,
+            **scored,
+        }
+
+    start_spy_idx = spy_dates.index(rebalance_dates[0])
+    end_spy_idx = spy_dates.index(rebalance_dates[-1])
+    sim_dates = spy_dates[start_spy_idx: end_spy_idx + 1]
+    sim_spy = spy_adjs[start_spy_idx: end_spy_idx + 1]
+
+    daily_evals: list[dict[str, dict[str, Any]]] = []
+    for d_s in sim_dates:
+        row_ev: dict[str, dict[str, Any]] = {}
+        for sym in stocks_db:
+            ev_d = eval_daily_pit(sym, d_s)
+            if ev_d:
+                row_ev[sym] = ev_d
+        daily_evals.append(row_ev)
+
+    dip_nav_daily = [10000.0]
+    dip_holdings: dict[str, int] = {}
+    prev_w_dip: dict[str, float] = {}
+    dip_entries_count = 0
+    MAX_DIP_POS = 6
+
+    for t in range(len(sim_dates) - 1):
+        today_ev = daily_evals[t]
+        tom_ev = daily_evals[t + 1]
+
+        to_remove = []
+        for sym, entry_t in dip_holdings.items():
+            ev_d = today_ev.get(sym)
+            if not ev_d or sym not in tom_ev:
+                to_remove.append(sym)
+                continue
+            if (t - entry_t) >= 10:
+                if (
+                    (ev_d["rsi14"] is not None and ev_d["rsi14"] >= 72.0)
+                    or (ev_d["rsi5"] is not None and ev_d["rsi5"] >= 78.0)
+                    or ev_d["score"] < 50
+                ):
+                    to_remove.append(sym)
+        for sym in to_remove:
+            del dip_holdings[sym]
+
+        if len(dip_holdings) < MAX_DIP_POS:
+            cands = []
+            for sym, ev_d in today_ev.items():
+                if sym in dip_holdings or sym not in tom_ev:
+                    continue
+                if ev_d["score"] >= 62 and ev_d["valScore"] >= 46:
+                    is_dip = (
+                        (ev_d["rsi14"] is not None and ev_d["rsi14"] <= 42.0)
+                        or (ev_d["rsi5"] is not None and ev_d["rsi5"] <= 28.0)
+                        or (ev_d["dip20"] <= -6.0)
+                    )
+                    if is_dip:
+                        dip_rank = (
+                            ev_d["score"]
+                            + max(0.0, 45.0 - (ev_d["rsi14"] or 50.0)) * 0.6
+                            + abs(min(0.0, ev_d["dip20"])) * 0.8
+                        )
+                        cands.append((dip_rank, sym))
+            cands.sort(reverse=True)
+            for _, sym in cands[: (MAX_DIP_POS - len(dip_holdings))]:
+                dip_holdings[sym] = t
+                dip_entries_count += 1
+
+        valid_holdings = [s for s in dip_holdings if s in today_ev and s in tom_ev]
+        w_dip: dict[str, float] = {}
+        if valid_holdings:
+            for s in valid_holdings:
+                w_dip[s] = 1.0 / len(valid_holdings)
+        else:
+            w_dip["__SPY__"] = 1.0
+
+        turnover_dip = 0.5 * sum(
+            abs(w_dip.get(k, 0.0) - prev_w_dip.get(k, 0.0))
+            for k in set(w_dip) | set(prev_w_dip)
+        )
+        prev_w_dip = w_dip
+
+        r_day = 0.0
+        spy_r = sim_spy[t + 1] / sim_spy[t] - 1.0
+        for k, wk in w_dip.items():
+            if k == "__SPY__":
+                r_day += wk * spy_r
+            else:
+                sr = tom_ev[k]["adj"] / today_ev[k]["adj"] - 1.0
+                if -0.6 <= sr <= 1.0:
+                    r_day += wk * sr
+        r_day -= turnover_dip * TX_COST_BPS
+        dip_nav_daily.append(dip_nav_daily[-1] * (1.0 + r_day))
+
+    dip_nav_by_date = {d_s: v for d_s, v in zip(sim_dates, dip_nav_daily)}
+    nav_daily_dip = [dip_nav_by_date[d] for d in rebalance_dates]
+
     yearly_breakdown: list[dict[str, Any]] = []
     for yr in ("2022", "2023", "2024", "2025", "2026"):
         yr_indices = [i for i, d in enumerate(rebalance_dates) if d.startswith(yr)]
@@ -928,6 +1170,7 @@ def run_backtest() -> dict[str, Any]:
         end_i = yr_indices[-1]
         yearly_breakdown.append({
             "year": f"{yr} YTD" if yr == "2026" else yr,
+            "dailyDipPct": round((nav_daily_dip[end_i] / nav_daily_dip[start_i] - 1.0) * 100.0, 1),
             "strongBuyPct": round((nav_strong[end_i] / nav_strong[start_i] - 1.0) * 100.0, 1),
             "allBuysPct": round((nav_all_buys[end_i] / nav_all_buys[start_i] - 1.0) * 100.0, 1),
             "spyPct": round((nav_spy[end_i] / nav_spy[start_i] - 1.0) * 100.0, 1),
@@ -939,6 +1182,7 @@ def run_backtest() -> dict[str, Any]:
     def horizon_slice(months_back: int) -> dict[str, Any]:
         s_idx = max(0, len(rebalance_dates) - 1 - months_back)
         norm = lambda arr: [v / arr[s_idx] * 10000.0 for v in arr[s_idx:]]
+        nd = norm(nav_daily_dip)
         ns = norm(nav_strong)
         nb = norm(nav_all_buys)
         nspy = norm(nav_spy)
@@ -948,6 +1192,7 @@ def run_backtest() -> dict[str, Any]:
             "startDate": rebalance_dates[s_idx],
             "endDate": rebalance_dates[-1],
             "months": len(ns) - 1,
+            "dailyDip": compute_perf_stats(nd, nspy),
             "strongBuy": compute_perf_stats(ns, nspy),
             "allBuys": compute_perf_stats(nb, nspy),
             "spy": compute_perf_stats(nspy, nspy),
@@ -958,6 +1203,7 @@ def run_backtest() -> dict[str, Any]:
     series = [
         {
             "date": rebalance_dates[i],
+            "dailyDip": round(nav_daily_dip[i], 2),
             "strongBuy": round(nav_strong[i], 2),
             "allBuys": round(nav_all_buys[i], 2),
             "spy": round(nav_spy[i], 2),
@@ -971,11 +1217,13 @@ def run_backtest() -> dict[str, Any]:
         "generatedAt": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "initialCapital": 10000,
         "universeCount": len(stocks_db),
-        "rebalanceFrequency": "Monthly (month-end close, 0.10% turnover fee deducted)",
+        "dipEntriesCount": dip_entries_count,
+        "rebalanceFrequency": "Daily Dip-Buyer (daily dip triggers, >=10d hold) & Monthly Core Depots (0.10% fee)",
         "methodology": (
             "Point-in-time historical simulation (Nov 2021 – Nov 2026) using official SEC EDGAR 10-Q/10-K filings "
             "strictly gated by actual SEC filing dates (zero look-ahead bias) + dividend-reinvested Yahoo Finance "
-            "total-return series. Compares against both S&P 500 (SPY) and an Equal-Weight Universe benchmark."
+            "total-return series (0.10% trading fee deducted). Daily Dip-Buyer enters up to 6 high-score GARP stocks "
+            "on oversold daily pullbacks (RSI14 <= 42, RSI5 <= 28, or >=6% 20d dip) and holds until recovery (RSI >= 72)."
         ),
         "pickBeatSpyRatePct": round((pick_forward_hits / pick_forward_total * 100.0) if pick_forward_total else 0.0, 1),
         "horizons": {
@@ -1000,8 +1248,9 @@ if __name__ == "__main__":
     h5 = res["horizons"]["5y"]
     print("\n=== 5-YEAR FICTITIOUS $10,000 DEPOT RESULTS ({} -> {}) ===".format(h5["startDate"], h5["endDate"]))
     for name, key in [
-        ("Strong Buy Depot", "strongBuy"),
+        ("Daily Dip-Buyer ", "dailyDip"),
         ("All Buys Depot  ", "allBuys"),
+        ("Strong Buy Depot", "strongBuy"),
         ("Equal-Wt Univ   ", "equalUniverse"),
         ("S&P 500 (SPY)   ", "spy"),
         ("Avoid Basket    ", "avoidBasket"),
@@ -1015,7 +1264,8 @@ if __name__ == "__main__":
     print("\n=== YEAR-BY-YEAR RETURNS ===")
     for y in res["yearly"]:
         print(
-            "  {:8s}: StrongBuy={:>+6.1f}% | AllBuys={:>+6.1f}% | EqualUniv={:>+6.1f}% | SPY={:>+6.1f}% | Avoid={:>+6.1f}%".format(
-                y["year"], y["strongBuyPct"], y["allBuysPct"], y["equalUnivPct"], y["spyPct"], y["avoidBasketPct"]
+            "  {:8s}: DailyDip={:>+6.1f}% | AllBuys={:>+6.1f}% | StrongBuy={:>+6.1f}% | EqualUniv={:>+6.1f}% | SPY={:>+6.1f}% | Avoid={:>+6.1f}%".format(
+                y["year"], y["dailyDipPct"], y["allBuysPct"], y["strongBuyPct"], y["equalUnivPct"], y["spyPct"], y["avoidBasketPct"]
             )
         )
+
