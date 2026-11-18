@@ -1,0 +1,3519 @@
+{
+  "snapshotDate": "2021-11-30",
+  "sp100_2021": [
+    {
+      "sym2021": "AAPL",
+      "yfSym": "AAPL",
+      "cik2021": "0000320193",
+      "cikCurr": "0000320193",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "ABBV",
+      "yfSym": "ABBV",
+      "cik2021": "0001551152",
+      "cikCurr": "0001551152",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ABT",
+      "yfSym": "ABT",
+      "cik2021": "0000001800",
+      "cikCurr": "0000001800",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ACN",
+      "yfSym": "ACN",
+      "cik2021": "0001467373",
+      "cikCurr": "0001467373",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ADBE",
+      "yfSym": "ADBE",
+      "cik2021": "0000796343",
+      "cikCurr": "0000796343",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "AIG",
+      "yfSym": "AIG",
+      "cik2021": "0000005272",
+      "cikCurr": "0000005272",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AMGN",
+      "yfSym": "AMGN",
+      "cik2021": "0000318154",
+      "cikCurr": "0000318154",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "AMT",
+      "yfSym": "AMT",
+      "cik2021": "0001053507",
+      "cikCurr": "0001053507",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AMZN",
+      "yfSym": "AMZN",
+      "cik2021": "0001018724",
+      "cikCurr": "0001018724",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "AVGO",
+      "yfSym": "AVGO",
+      "cik2021": "0001730168",
+      "cikCurr": "0001730168",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "AXP",
+      "yfSym": "AXP",
+      "cik2021": "0000004962",
+      "cikCurr": "0000004962",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BA",
+      "yfSym": "BA",
+      "cik2021": "0000012927",
+      "cikCurr": "0000012927",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BAC",
+      "yfSym": "BAC",
+      "cik2021": "0000070858",
+      "cikCurr": "0000070858",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BIIB",
+      "yfSym": "BIIB",
+      "cik2021": "0000875045",
+      "cikCurr": "0000875045",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "BK",
+      "yfSym": "BNY",
+      "cik2021": "0001390777",
+      "cikCurr": "0001390777",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BKNG",
+      "yfSym": "BKNG",
+      "cik2021": "0001075531",
+      "cikCurr": "0001075531",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "BLK",
+      "yfSym": "BLK",
+      "cik2021": "0001364742",
+      "cikCurr": "0002012383",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BMY",
+      "yfSym": "BMY",
+      "cik2021": "0000014272",
+      "cikCurr": "0000014272",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "C",
+      "yfSym": "C",
+      "cik2021": "0000831001",
+      "cikCurr": "0000831001",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CAT",
+      "yfSym": "CAT",
+      "cik2021": "0000018230",
+      "cikCurr": "0000018230",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CHTR",
+      "yfSym": "CHTR",
+      "cik2021": "0001091667",
+      "cikCurr": "0001091667",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "CL",
+      "yfSym": "CL",
+      "cik2021": "0000021665",
+      "cikCurr": "0000021665",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CMCSA",
+      "yfSym": "CMCSA",
+      "cik2021": "0001166691",
+      "cikCurr": "0001166691",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "COF",
+      "yfSym": "COF",
+      "cik2021": "0000927628",
+      "cikCurr": "0000927628",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "COP",
+      "yfSym": "COP",
+      "cik2021": "0001163165",
+      "cikCurr": "0001163165",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "COST",
+      "yfSym": "COST",
+      "cik2021": "0000909832",
+      "cikCurr": "0000909832",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "CRM",
+      "yfSym": "CRM",
+      "cik2021": "0001108524",
+      "cikCurr": "0001108524",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CSCO",
+      "yfSym": "CSCO",
+      "cik2021": "0000858877",
+      "cikCurr": "0000858877",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "CVS",
+      "yfSym": "CVS",
+      "cik2021": "0000064803",
+      "cikCurr": "0000064803",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CVX",
+      "yfSym": "CVX",
+      "cik2021": "0000093410",
+      "cikCurr": "0000093410",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DD",
+      "yfSym": "DD",
+      "cik2021": "0001666700",
+      "cikCurr": "0001666700",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DHR",
+      "yfSym": "DHR",
+      "cik2021": "0000313616",
+      "cikCurr": "0000313616",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DIS",
+      "yfSym": "DIS",
+      "cik2021": "0001744489",
+      "cikCurr": "0001744489",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DOW",
+      "yfSym": "DOW",
+      "cik2021": "0001751788",
+      "cikCurr": "0001751788",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DUK",
+      "yfSym": "DUK",
+      "cik2021": "0001326160",
+      "cikCurr": "0001326160",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EMR",
+      "yfSym": "EMR",
+      "cik2021": "0000032604",
+      "cikCurr": "0000032604",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EXC",
+      "yfSym": "EXC",
+      "cik2021": "0001109357",
+      "cikCurr": "0001109357",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "F",
+      "yfSym": "F",
+      "cik2021": "0000037996",
+      "cikCurr": "0000037996",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FB",
+      "yfSym": "META",
+      "cik2021": "0001326801",
+      "cikCurr": "0001326801",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "FDX",
+      "yfSym": "FDX",
+      "cik2021": "0001048911",
+      "cikCurr": "0001048911",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GD",
+      "yfSym": "GD",
+      "cik2021": "0000040533",
+      "cikCurr": "0000040533",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GE",
+      "yfSym": "GE",
+      "cik2021": "0000040545",
+      "cikCurr": "0000040545",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GILD",
+      "yfSym": "GILD",
+      "cik2021": "0000882095",
+      "cikCurr": "0000882095",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "GM",
+      "yfSym": "GM",
+      "cik2021": "0001467858",
+      "cikCurr": "0001467858",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GOOGL",
+      "yfSym": "GOOGL",
+      "cik2021": "0001652044",
+      "cikCurr": "0001652044",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "GS",
+      "yfSym": "GS",
+      "cik2021": "0000886982",
+      "cikCurr": "0000886982",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HD",
+      "yfSym": "HD",
+      "cik2021": "0000354950",
+      "cikCurr": "0000354950",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HON",
+      "yfSym": "HON",
+      "cik2021": "0000773840",
+      "cikCurr": "0000773840",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IBM",
+      "yfSym": "IBM",
+      "cik2021": "0000051143",
+      "cikCurr": "0000051143",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "INTC",
+      "yfSym": "INTC",
+      "cik2021": "0000050863",
+      "cikCurr": "0000050863",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "JNJ",
+      "yfSym": "JNJ",
+      "cik2021": "0000200406",
+      "cikCurr": "0000200406",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "JPM",
+      "yfSym": "JPM",
+      "cik2021": "0000019617",
+      "cikCurr": "0000019617",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KHC",
+      "yfSym": "KHC",
+      "cik2021": "0001637459",
+      "cikCurr": "0001637459",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "KO",
+      "yfSym": "KO",
+      "cik2021": "0000021344",
+      "cikCurr": "0000021344",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LIN",
+      "yfSym": "LIN",
+      "cik2021": "0001707925",
+      "cikCurr": "0001707925",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LLY",
+      "yfSym": "LLY",
+      "cik2021": "0000059478",
+      "cikCurr": "0000059478",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LMT",
+      "yfSym": "LMT",
+      "cik2021": "0000936468",
+      "cikCurr": "0000936468",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LOW",
+      "yfSym": "LOW",
+      "cik2021": "0000060667",
+      "cikCurr": "0000060667",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MA",
+      "yfSym": "MA",
+      "cik2021": "0001141391",
+      "cikCurr": "0001141391",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MCD",
+      "yfSym": "MCD",
+      "cik2021": "0000063908",
+      "cikCurr": "0000063908",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MDLZ",
+      "yfSym": "MDLZ",
+      "cik2021": "0001103982",
+      "cikCurr": "0001103982",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "MDT",
+      "yfSym": "MDT",
+      "cik2021": "0001613103",
+      "cikCurr": "0001613103",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MET",
+      "yfSym": "MET",
+      "cik2021": "0001099219",
+      "cikCurr": "0001099219",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MMM",
+      "yfSym": "MMM",
+      "cik2021": "0000066740",
+      "cikCurr": "0000066740",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MO",
+      "yfSym": "MO",
+      "cik2021": "0000764180",
+      "cikCurr": "0000764180",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MRK",
+      "yfSym": "MRK",
+      "cik2021": "0000310158",
+      "cikCurr": "0000310158",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MS",
+      "yfSym": "MS",
+      "cik2021": "0000895421",
+      "cikCurr": "0000895421",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MSFT",
+      "yfSym": "MSFT",
+      "cik2021": "0000789019",
+      "cikCurr": "0000789019",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "NEE",
+      "yfSym": "NEE",
+      "cik2021": "0000753308",
+      "cikCurr": "0000753308",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NFLX",
+      "yfSym": "NFLX",
+      "cik2021": "0001065280",
+      "cikCurr": "0001065280",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "NKE",
+      "yfSym": "NKE",
+      "cik2021": "0000320187",
+      "cikCurr": "0000320187",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NVDA",
+      "yfSym": "NVDA",
+      "cik2021": "0001045810",
+      "cikCurr": "0001045810",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "ORCL",
+      "yfSym": "ORCL",
+      "cik2021": "0001341439",
+      "cikCurr": "0001341439",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PEP",
+      "yfSym": "PEP",
+      "cik2021": "0000077476",
+      "cikCurr": "0000077476",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "PFE",
+      "yfSym": "PFE",
+      "cik2021": "0000078003",
+      "cikCurr": "0000078003",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PG",
+      "yfSym": "PG",
+      "cik2021": "0000080424",
+      "cikCurr": "0000080424",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PM",
+      "yfSym": "PM",
+      "cik2021": "0001413329",
+      "cikCurr": "0001413329",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PYPL",
+      "yfSym": "PYPL",
+      "cik2021": "0001633917",
+      "cikCurr": "0001633917",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "QCOM",
+      "yfSym": "QCOM",
+      "cik2021": "0000804328",
+      "cikCurr": "0000804328",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "RTX",
+      "yfSym": "RTX",
+      "cik2021": "0000101829",
+      "cikCurr": "0000101829",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SBUX",
+      "yfSym": "SBUX",
+      "cik2021": "0000829224",
+      "cikCurr": "0000829224",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "SO",
+      "yfSym": "SO",
+      "cik2021": "0000092122",
+      "cikCurr": "0000092122",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SPG",
+      "yfSym": "SPG",
+      "cik2021": "0001063761",
+      "cikCurr": "0001063761",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "T",
+      "yfSym": "T",
+      "cik2021": "0000732717",
+      "cikCurr": "0000732717",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TGT",
+      "yfSym": "TGT",
+      "cik2021": "0000027419",
+      "cikCurr": "0000027419",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TMO",
+      "yfSym": "TMO",
+      "cik2021": "0000097745",
+      "cikCurr": "0000097745",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TMUS",
+      "yfSym": "TMUS",
+      "cik2021": "0001283699",
+      "cikCurr": "0001283699",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "TSLA",
+      "yfSym": "TSLA",
+      "cik2021": "0001318605",
+      "cikCurr": "0001318605",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "TXN",
+      "yfSym": "TXN",
+      "cik2021": "0000097476",
+      "cikCurr": "0000097476",
+      "sector": "Unknown",
+      "exchange": "NASDAQ"
+    },
+    {
+      "sym2021": "UNH",
+      "yfSym": "UNH",
+      "cik2021": "0000731766",
+      "cikCurr": "0000731766",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UNP",
+      "yfSym": "UNP",
+      "cik2021": "0000100885",
+      "cikCurr": "0000100885",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UPS",
+      "yfSym": "UPS",
+      "cik2021": "0001090727",
+      "cikCurr": "0001090727",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "USB",
+      "yfSym": "USB",
+      "cik2021": "0000036104",
+      "cikCurr": "0000036104",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "V",
+      "yfSym": "V",
+      "cik2021": "0001403161",
+      "cikCurr": "0001403161",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VZ",
+      "yfSym": "VZ",
+      "cik2021": "0000732712",
+      "cikCurr": "0000732712",
+      "sector": "1983 (1877)",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WFC",
+      "yfSym": "WFC",
+      "cik2021": "0000072971",
+      "cikCurr": "0000072971",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WMT",
+      "yfSym": "WMT",
+      "cik2021": "0000104169",
+      "cikCurr": "0000104169",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "XOM",
+      "yfSym": "XOM",
+      "cik2021": "0000034088",
+      "cikCurr": "0002115436",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    }
+  ],
+  "nyse_2021": [
+    {
+      "sym2021": "A",
+      "yfSym": "A",
+      "cik2021": "0001090872",
+      "cikCurr": "0001090872",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AAP",
+      "yfSym": "AAP",
+      "cik2021": "0001158449",
+      "cikCurr": "0001158449",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ABBV",
+      "yfSym": "ABBV",
+      "cik2021": "0001551152",
+      "cikCurr": "0001551152",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ABC",
+      "yfSym": "COR",
+      "cik2021": "0001140859",
+      "cikCurr": "0001140859",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ABT",
+      "yfSym": "ABT",
+      "cik2021": "0000001800",
+      "cikCurr": "0000001800",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ACN",
+      "yfSym": "ACN",
+      "cik2021": "0001467373",
+      "cikCurr": "0001467373",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ADM",
+      "yfSym": "ADM",
+      "cik2021": "0000007084",
+      "cikCurr": "0000007084",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AEE",
+      "yfSym": "AEE",
+      "cik2021": "0001002910",
+      "cikCurr": "0001002910",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AEP",
+      "yfSym": "AEP",
+      "cik2021": "0000004904",
+      "cikCurr": "0000004904",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AES",
+      "yfSym": "AES",
+      "cik2021": "0000874761",
+      "cikCurr": "0000874761",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AFL",
+      "yfSym": "AFL",
+      "cik2021": "0000004977",
+      "cikCurr": "0000004977",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AIG",
+      "yfSym": "AIG",
+      "cik2021": "0000005272",
+      "cikCurr": "0000005272",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AIZ",
+      "yfSym": "AIZ",
+      "cik2021": "0001267238",
+      "cikCurr": "0001267238",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AJG",
+      "yfSym": "AJG",
+      "cik2021": "0000354190",
+      "cikCurr": "0000354190",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ALB",
+      "yfSym": "ALB",
+      "cik2021": "0000915913",
+      "cikCurr": "0000915913",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ALK",
+      "yfSym": "ALK",
+      "cik2021": "0000766421",
+      "cikCurr": "0000766421",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ALL",
+      "yfSym": "ALL",
+      "cik2021": "0000899051",
+      "cikCurr": "0000899051",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ALLE",
+      "yfSym": "ALLE",
+      "cik2021": "0001579241",
+      "cikCurr": "0001579241",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AMCR",
+      "yfSym": "AMCR",
+      "cik2021": "0001748790",
+      "cikCurr": "0001748790",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AME",
+      "yfSym": "AME",
+      "cik2021": "0001037868",
+      "cikCurr": "0001037868",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AMP",
+      "yfSym": "AMP",
+      "cik2021": "0000820027",
+      "cikCurr": "0000820027",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AMT",
+      "yfSym": "AMT",
+      "cik2021": "0001053507",
+      "cikCurr": "0001053507",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ANET",
+      "yfSym": "ANET",
+      "cik2021": "0001596532",
+      "cikCurr": "0001596532",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ANTM",
+      "yfSym": "ELV",
+      "cik2021": "0001156039",
+      "cikCurr": "0001156039",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AON",
+      "yfSym": "AON",
+      "cik2021": "0000315293",
+      "cikCurr": "0000315293",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AOS",
+      "yfSym": "AOS",
+      "cik2021": "0000091142",
+      "cikCurr": "0000091142",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "APD",
+      "yfSym": "APD",
+      "cik2021": "0000002969",
+      "cikCurr": "0000002969",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "APH",
+      "yfSym": "APH",
+      "cik2021": "0000820313",
+      "cikCurr": "0000820313",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "APTV",
+      "yfSym": "APTV",
+      "cik2021": "0001521332",
+      "cikCurr": "0001521332",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ARE",
+      "yfSym": "ARE",
+      "cik2021": "0001035443",
+      "cikCurr": "0001035443",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ATO",
+      "yfSym": "ATO",
+      "cik2021": "0000731802",
+      "cikCurr": "0000731802",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AVY",
+      "yfSym": "AVY",
+      "cik2021": "0000008818",
+      "cikCurr": "0000008818",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AWK",
+      "yfSym": "AWK",
+      "cik2021": "0001410636",
+      "cikCurr": "0001410636",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AXP",
+      "yfSym": "AXP",
+      "cik2021": "0000004962",
+      "cikCurr": "0000004962",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "AZO",
+      "yfSym": "AZO",
+      "cik2021": "0000866787",
+      "cikCurr": "0000866787",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BA",
+      "yfSym": "BA",
+      "cik2021": "0000012927",
+      "cikCurr": "0000012927",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BAC",
+      "yfSym": "BAC",
+      "cik2021": "0000070858",
+      "cikCurr": "0000070858",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BAX",
+      "yfSym": "BAX",
+      "cik2021": "0000010456",
+      "cikCurr": "0000010456",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BBWI",
+      "yfSym": "BBWI",
+      "cik2021": "0000701985",
+      "cikCurr": "0000701985",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BBY",
+      "yfSym": "BBY",
+      "cik2021": "0000764478",
+      "cikCurr": "0000764478",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BDX",
+      "yfSym": "BDX",
+      "cik2021": "0000010795",
+      "cikCurr": "0000010795",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BEN",
+      "yfSym": "BEN",
+      "cik2021": "0000038777",
+      "cikCurr": "0000038777",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BF.B",
+      "yfSym": "BF-B",
+      "cik2021": "0000014693",
+      "cikCurr": "0000014693",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BIO",
+      "yfSym": "BIO",
+      "cik2021": "0000012208",
+      "cikCurr": "0000012208",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BK",
+      "yfSym": "BNY",
+      "cik2021": "0001390777",
+      "cikCurr": "0001390777",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BKR",
+      "yfSym": "BKR",
+      "cik2021": "0001701605",
+      "cikCurr": "0001701605",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BLK",
+      "yfSym": "BLK",
+      "cik2021": "0001364742",
+      "cikCurr": "0002012383",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BLL",
+      "yfSym": "BALL",
+      "cik2021": "0000009389",
+      "cikCurr": "0000009389",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BMY",
+      "yfSym": "BMY",
+      "cik2021": "0000014272",
+      "cikCurr": "0000014272",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BR",
+      "yfSym": "BR",
+      "cik2021": "0001383312",
+      "cikCurr": "0001383312",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BRK.B",
+      "yfSym": "BRK-B",
+      "cik2021": "0001067983",
+      "cikCurr": "0001067983",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BRO",
+      "yfSym": "BRO",
+      "cik2021": "0000079282",
+      "cikCurr": "0000079282",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BSX",
+      "yfSym": "BSX",
+      "cik2021": "0000885725",
+      "cikCurr": "0000885725",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BWA",
+      "yfSym": "BWA",
+      "cik2021": "0000908255",
+      "cikCurr": "0000908255",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "BXP",
+      "yfSym": "BXP",
+      "cik2021": "0001037540",
+      "cikCurr": "0001037540",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "C",
+      "yfSym": "C",
+      "cik2021": "0000831001",
+      "cikCurr": "0000831001",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CAG",
+      "yfSym": "CAG",
+      "cik2021": "0000023217",
+      "cikCurr": "0000023217",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CAH",
+      "yfSym": "CAH",
+      "cik2021": "0000721371",
+      "cikCurr": "0000721371",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CARR",
+      "yfSym": "CARR",
+      "cik2021": "0001783180",
+      "cikCurr": "0001783180",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CAT",
+      "yfSym": "CAT",
+      "cik2021": "0000018230",
+      "cikCurr": "0000018230",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CB",
+      "yfSym": "CB",
+      "cik2021": "0000896159",
+      "cikCurr": "0000896159",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CBRE",
+      "yfSym": "CBRE",
+      "cik2021": "0001138118",
+      "cikCurr": "0001138118",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CCI",
+      "yfSym": "CCI",
+      "cik2021": "0001051470",
+      "cikCurr": "0001051470",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CCL",
+      "yfSym": "CCL",
+      "cik2021": "0000815097",
+      "cikCurr": "0000815097",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CE",
+      "yfSym": "CE",
+      "cik2021": "0001306830",
+      "cikCurr": "0001306830",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CF",
+      "yfSym": "CF",
+      "cik2021": "0001324404",
+      "cikCurr": "0001324404",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CFG",
+      "yfSym": "CFG",
+      "cik2021": "0000759944",
+      "cikCurr": "0000759944",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CHD",
+      "yfSym": "CHD",
+      "cik2021": "0000313927",
+      "cikCurr": "0000313927",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CI",
+      "yfSym": "CI",
+      "cik2021": "0001739940",
+      "cikCurr": "0001739940",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CL",
+      "yfSym": "CL",
+      "cik2021": "0000021665",
+      "cikCurr": "0000021665",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CLX",
+      "yfSym": "CLX",
+      "cik2021": "0000021076",
+      "cikCurr": "0000021076",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CMG",
+      "yfSym": "CMG",
+      "cik2021": "0001058090",
+      "cikCurr": "0001058090",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CMI",
+      "yfSym": "CMI",
+      "cik2021": "0000026172",
+      "cikCurr": "0000026172",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CMS",
+      "yfSym": "CMS",
+      "cik2021": "0000811156",
+      "cikCurr": "0000811156",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CNC",
+      "yfSym": "CNC",
+      "cik2021": "0001071739",
+      "cikCurr": "0001071739",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CNP",
+      "yfSym": "CNP",
+      "cik2021": "0001130310",
+      "cikCurr": "0001130310",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "COF",
+      "yfSym": "COF",
+      "cik2021": "0000927628",
+      "cikCurr": "0000927628",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "COO",
+      "yfSym": "COO",
+      "cik2021": "0000711404",
+      "cikCurr": "0000711404",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "COP",
+      "yfSym": "COP",
+      "cik2021": "0001163165",
+      "cikCurr": "0001163165",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CPB",
+      "yfSym": "CPB",
+      "cik2021": "0000016732",
+      "cikCurr": "0000016732",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CRL",
+      "yfSym": "CRL",
+      "cik2021": "0001100682",
+      "cikCurr": "0001100682",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CRM",
+      "yfSym": "CRM",
+      "cik2021": "0001108524",
+      "cikCurr": "0001108524",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CTVA",
+      "yfSym": "CTVA",
+      "cik2021": "0001755672",
+      "cikCurr": "0001755672",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CVS",
+      "yfSym": "CVS",
+      "cik2021": "0000064803",
+      "cikCurr": "0000064803",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "CVX",
+      "yfSym": "CVX",
+      "cik2021": "0000093410",
+      "cikCurr": "0000093410",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "D",
+      "yfSym": "D",
+      "cik2021": "0000715957",
+      "cikCurr": "0000715957",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DAL",
+      "yfSym": "DAL",
+      "cik2021": "0000027904",
+      "cikCurr": "0000027904",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DD",
+      "yfSym": "DD",
+      "cik2021": "0001666700",
+      "cikCurr": "0001666700",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DE",
+      "yfSym": "DE",
+      "cik2021": "0000315189",
+      "cikCurr": "0000315189",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DG",
+      "yfSym": "DG",
+      "cik2021": "0000029534",
+      "cikCurr": "0000029534",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DGX",
+      "yfSym": "DGX",
+      "cik2021": "0001022079",
+      "cikCurr": "0001022079",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DHI",
+      "yfSym": "DHI",
+      "cik2021": "0000882184",
+      "cikCurr": "0000882184",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DHR",
+      "yfSym": "DHR",
+      "cik2021": "0000313616",
+      "cikCurr": "0000313616",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DIS",
+      "yfSym": "DIS",
+      "cik2021": "0001744489",
+      "cikCurr": "0001744489",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DLR",
+      "yfSym": "DLR",
+      "cik2021": "0001297996",
+      "cikCurr": "0001297996",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DOV",
+      "yfSym": "DOV",
+      "cik2021": "0000029905",
+      "cikCurr": "0000029905",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DOW",
+      "yfSym": "DOW",
+      "cik2021": "0001751788",
+      "cikCurr": "0001751788",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DPZ",
+      "yfSym": "DPZ",
+      "cik2021": "0001286681",
+      "cikCurr": "0001286681",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DRI",
+      "yfSym": "DRI",
+      "cik2021": "0000940944",
+      "cikCurr": "0000940944",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DTE",
+      "yfSym": "DTE",
+      "cik2021": "0000936340",
+      "cikCurr": "0000936340",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DUK",
+      "yfSym": "DUK",
+      "cik2021": "0001326160",
+      "cikCurr": "0001326160",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DVA",
+      "yfSym": "DVA",
+      "cik2021": "0000927066",
+      "cikCurr": "0000927066",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DVN",
+      "yfSym": "DVN",
+      "cik2021": "0001090012",
+      "cikCurr": "0001090012",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "DXC",
+      "yfSym": "DXC",
+      "cik2021": "0001688568",
+      "cikCurr": "0001688568",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ECL",
+      "yfSym": "ECL",
+      "cik2021": "0000031462",
+      "cikCurr": "0000031462",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ED",
+      "yfSym": "ED",
+      "cik2021": "0001047862",
+      "cikCurr": "0001047862",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EFX",
+      "yfSym": "EFX",
+      "cik2021": "0000033185",
+      "cikCurr": "0000033185",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EIX",
+      "yfSym": "EIX",
+      "cik2021": "0000827052",
+      "cikCurr": "0000827052",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EL",
+      "yfSym": "EL",
+      "cik2021": "0001001250",
+      "cikCurr": "0001001250",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EMN",
+      "yfSym": "EMN",
+      "cik2021": "0000915389",
+      "cikCurr": "0000915389",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EMR",
+      "yfSym": "EMR",
+      "cik2021": "0000032604",
+      "cikCurr": "0000032604",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EOG",
+      "yfSym": "EOG",
+      "cik2021": "0000821189",
+      "cikCurr": "0000821189",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EQR",
+      "yfSym": "VMRK",
+      "cik2021": "0000906107",
+      "cikCurr": "0000906107",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ES",
+      "yfSym": "ES",
+      "cik2021": "0000072741",
+      "cikCurr": "0000072741",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ESS",
+      "yfSym": "ESS",
+      "cik2021": "0000920522",
+      "cikCurr": "0000920522",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ETN",
+      "yfSym": "ETN",
+      "cik2021": "0001551182",
+      "cikCurr": "0001551182",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ETR",
+      "yfSym": "ETR",
+      "cik2021": "0000065984",
+      "cikCurr": "0000065984",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EVRG",
+      "yfSym": "EVRG",
+      "cik2021": "0001711269",
+      "cikCurr": "0001711269",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EW",
+      "yfSym": "EW",
+      "cik2021": "0001099800",
+      "cikCurr": "0001099800",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EXC",
+      "yfSym": "EXC",
+      "cik2021": "0001109357",
+      "cikCurr": "0001109357",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "EXR",
+      "yfSym": "EXR",
+      "cik2021": "0001289490",
+      "cikCurr": "0001289490",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "F",
+      "yfSym": "F",
+      "cik2021": "0000037996",
+      "cikCurr": "0000037996",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FBHS",
+      "yfSym": "FBIN",
+      "cik2021": "0001519751",
+      "cikCurr": "0001519751",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FCX",
+      "yfSym": "FCX",
+      "cik2021": "0000831259",
+      "cikCurr": "0000831259",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FDX",
+      "yfSym": "FDX",
+      "cik2021": "0001048911",
+      "cikCurr": "0001048911",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FE",
+      "yfSym": "FE",
+      "cik2021": "0001031296",
+      "cikCurr": "0001031296",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FIS",
+      "yfSym": "FIS",
+      "cik2021": "0001136893",
+      "cikCurr": "0001136893",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FLT",
+      "yfSym": "CPAY",
+      "cik2021": "0001175454",
+      "cikCurr": "0001175454",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FMC",
+      "yfSym": "FMC",
+      "cik2021": "0000037785",
+      "cikCurr": "0000037785",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FRC",
+      "yfSym": "FRCB",
+      "cik2021": "0001132979",
+      "cikCurr": "0001132979",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FRT",
+      "yfSym": "FRT",
+      "cik2021": "0000034903",
+      "cikCurr": "0000034903",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "FTV",
+      "yfSym": "FTV",
+      "cik2021": "0001659166",
+      "cikCurr": "0001659166",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GD",
+      "yfSym": "GD",
+      "cik2021": "0000040533",
+      "cikCurr": "0000040533",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GE",
+      "yfSym": "GE",
+      "cik2021": "0000040545",
+      "cikCurr": "0000040545",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GIS",
+      "yfSym": "GIS",
+      "cik2021": "0000040704",
+      "cikCurr": "0000040704",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GL",
+      "yfSym": "GL",
+      "cik2021": "0000320335",
+      "cikCurr": "0000320335",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GLW",
+      "yfSym": "GLW",
+      "cik2021": "0000024741",
+      "cikCurr": "0000024741",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GM",
+      "yfSym": "GM",
+      "cik2021": "0001467858",
+      "cikCurr": "0001467858",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GNRC",
+      "yfSym": "GNRC",
+      "cik2021": "0001474735",
+      "cikCurr": "0001474735",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GPC",
+      "yfSym": "GPC",
+      "cik2021": "0000040987",
+      "cikCurr": "0000040987",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GPN",
+      "yfSym": "GPN",
+      "cik2021": "0001123360",
+      "cikCurr": "0001123360",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GPS",
+      "yfSym": "GAP",
+      "cik2021": "0000039911",
+      "cikCurr": "0000039911",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GS",
+      "yfSym": "GS",
+      "cik2021": "0000886982",
+      "cikCurr": "0000886982",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "GWW",
+      "yfSym": "GWW",
+      "cik2021": "0000277135",
+      "cikCurr": "0000277135",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HAL",
+      "yfSym": "HAL",
+      "cik2021": "0000045012",
+      "cikCurr": "0000045012",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HCA",
+      "yfSym": "HCA",
+      "cik2021": "0000860730",
+      "cikCurr": "0000860730",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HD",
+      "yfSym": "HD",
+      "cik2021": "0000354950",
+      "cikCurr": "0000354950",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HIG",
+      "yfSym": "HIG",
+      "cik2021": "0000874766",
+      "cikCurr": "0000874766",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HII",
+      "yfSym": "HII",
+      "cik2021": "0001501585",
+      "cikCurr": "0001501585",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HLT",
+      "yfSym": "HLT",
+      "cik2021": "0001585689",
+      "cikCurr": "0001585689",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HON",
+      "yfSym": "HON",
+      "cik2021": "0000773840",
+      "cikCurr": "0000773840",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HPE",
+      "yfSym": "HPE",
+      "cik2021": "0001645590",
+      "cikCurr": "0001645590",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HPQ",
+      "yfSym": "HPQ",
+      "cik2021": "0000047217",
+      "cikCurr": "0000047217",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HRL",
+      "yfSym": "HRL",
+      "cik2021": "0000048465",
+      "cikCurr": "0000048465",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HST",
+      "yfSym": "HST",
+      "cik2021": "0001070750",
+      "cikCurr": "0001070750",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HSY",
+      "yfSym": "HSY",
+      "cik2021": "0000047111",
+      "cikCurr": "0000047111",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HUM",
+      "yfSym": "HUM",
+      "cik2021": "0000049071",
+      "cikCurr": "0000049071",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "HWM",
+      "yfSym": "HWM",
+      "cik2021": "0000004281",
+      "cikCurr": "0000004281",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IBM",
+      "yfSym": "IBM",
+      "cik2021": "0000051143",
+      "cikCurr": "0000051143",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ICE",
+      "yfSym": "ICE",
+      "cik2021": "0001571949",
+      "cikCurr": "0001571949",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IEX",
+      "yfSym": "IEX",
+      "cik2021": "0000832101",
+      "cikCurr": "0000832101",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IFF",
+      "yfSym": "IFF",
+      "cik2021": "0000051253",
+      "cikCurr": "0000051253",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IP",
+      "yfSym": "IP",
+      "cik2021": "0000051434",
+      "cikCurr": "0000051434",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IQV",
+      "yfSym": "IQV",
+      "cik2021": "0001478242",
+      "cikCurr": "0001478242",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IR",
+      "yfSym": "IR",
+      "cik2021": "0001699150",
+      "cikCurr": "0001699150",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IRM",
+      "yfSym": "IRM",
+      "cik2021": "0001020569",
+      "cikCurr": "0001020569",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IT",
+      "yfSym": "IT",
+      "cik2021": "0000749251",
+      "cikCurr": "0000749251",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ITW",
+      "yfSym": "ITW",
+      "cik2021": "0000049826",
+      "cikCurr": "0000049826",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "IVZ",
+      "yfSym": "IVZ",
+      "cik2021": "0000914208",
+      "cikCurr": "0000914208",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "J",
+      "yfSym": "J",
+      "cik2021": "0000052988",
+      "cikCurr": "0000052988",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "JCI",
+      "yfSym": "JCI",
+      "cik2021": "0000833444",
+      "cikCurr": "0000833444",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "JNJ",
+      "yfSym": "JNJ",
+      "cik2021": "0000200406",
+      "cikCurr": "0000200406",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "JPM",
+      "yfSym": "JPM",
+      "cik2021": "0000019617",
+      "cikCurr": "0000019617",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KEY",
+      "yfSym": "KEY",
+      "cik2021": "0000091576",
+      "cikCurr": "0000091576",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KEYS",
+      "yfSym": "KEYS",
+      "cik2021": "0001601046",
+      "cikCurr": "0001601046",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KIM",
+      "yfSym": "KIM",
+      "cik2021": "0000879101",
+      "cikCurr": "0000879101",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KMB",
+      "yfSym": "KMB",
+      "cik2021": "0000055785",
+      "cikCurr": "0000055785",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KMI",
+      "yfSym": "KMI",
+      "cik2021": "0001506307",
+      "cikCurr": "0001506307",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KMX",
+      "yfSym": "KMX",
+      "cik2021": "0001170010",
+      "cikCurr": "0001170010",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KO",
+      "yfSym": "KO",
+      "cik2021": "0000021344",
+      "cikCurr": "0000021344",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "KR",
+      "yfSym": "KR",
+      "cik2021": "0000056873",
+      "cikCurr": "0000056873",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "L",
+      "yfSym": "L",
+      "cik2021": "0000060086",
+      "cikCurr": "0000060086",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LDOS",
+      "yfSym": "LDOS",
+      "cik2021": "0001336920",
+      "cikCurr": "0001336920",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LEN",
+      "yfSym": "LEN",
+      "cik2021": "0000920760",
+      "cikCurr": "0000920760",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LH",
+      "yfSym": "LH",
+      "cik2021": "0000920148",
+      "cikCurr": "0000920148",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LHX",
+      "yfSym": "LHX",
+      "cik2021": "0000202058",
+      "cikCurr": "0000202058",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LIN",
+      "yfSym": "LIN",
+      "cik2021": "0001707925",
+      "cikCurr": "0001707925",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LLY",
+      "yfSym": "LLY",
+      "cik2021": "0000059478",
+      "cikCurr": "0000059478",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LMT",
+      "yfSym": "LMT",
+      "cik2021": "0000936468",
+      "cikCurr": "0000936468",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LNC",
+      "yfSym": "LNC",
+      "cik2021": "0000059558",
+      "cikCurr": "0000059558",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LNT",
+      "yfSym": "LNT",
+      "cik2021": "0000352541",
+      "cikCurr": "0000352541",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LOW",
+      "yfSym": "LOW",
+      "cik2021": "0000060667",
+      "cikCurr": "0000060667",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LUMN",
+      "yfSym": "LUMN",
+      "cik2021": "0000018926",
+      "cikCurr": "0000018926",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LUV",
+      "yfSym": "LUV",
+      "cik2021": "0000092380",
+      "cikCurr": "0000092380",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LVS",
+      "yfSym": "LVS",
+      "cik2021": "0001300514",
+      "cikCurr": "0001300514",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LW",
+      "yfSym": "LW",
+      "cik2021": "0001679273",
+      "cikCurr": "0001679273",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LYB",
+      "yfSym": "LYB",
+      "cik2021": "0001489393",
+      "cikCurr": "0001489393",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "LYV",
+      "yfSym": "LYV",
+      "cik2021": "0001335258",
+      "cikCurr": "0001335258",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MA",
+      "yfSym": "MA",
+      "cik2021": "0001141391",
+      "cikCurr": "0001141391",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MAA",
+      "yfSym": "MAA",
+      "cik2021": "0000912595",
+      "cikCurr": "0000912595",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MAS",
+      "yfSym": "MAS",
+      "cik2021": "0000062996",
+      "cikCurr": "0000062996",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MCD",
+      "yfSym": "MCD",
+      "cik2021": "0000063908",
+      "cikCurr": "0000063908",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MCK",
+      "yfSym": "MCK",
+      "cik2021": "0000927653",
+      "cikCurr": "0000927653",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MCO",
+      "yfSym": "MCO",
+      "cik2021": "0001059556",
+      "cikCurr": "0001059556",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MDT",
+      "yfSym": "MDT",
+      "cik2021": "0001613103",
+      "cikCurr": "0001613103",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MET",
+      "yfSym": "MET",
+      "cik2021": "0001099219",
+      "cikCurr": "0001099219",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MGM",
+      "yfSym": "MGM",
+      "cik2021": "0000789570",
+      "cikCurr": "0000789570",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MHK",
+      "yfSym": "MHK",
+      "cik2021": "0000851968",
+      "cikCurr": "0000851968",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MKC",
+      "yfSym": "MKC",
+      "cik2021": "0000063754",
+      "cikCurr": "0000063754",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MLM",
+      "yfSym": "MLM",
+      "cik2021": "0000916076",
+      "cikCurr": "0000916076",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MMC",
+      "yfSym": "MRSH",
+      "cik2021": "0000062709",
+      "cikCurr": "0000062709",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MMM",
+      "yfSym": "MMM",
+      "cik2021": "0000066740",
+      "cikCurr": "0000066740",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MO",
+      "yfSym": "MO",
+      "cik2021": "0000764180",
+      "cikCurr": "0000764180",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MOS",
+      "yfSym": "MOS",
+      "cik2021": "0001285785",
+      "cikCurr": "0001285785",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MPC",
+      "yfSym": "MPC",
+      "cik2021": "0001510295",
+      "cikCurr": "0001510295",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MRK",
+      "yfSym": "MRK",
+      "cik2021": "0000310158",
+      "cikCurr": "0000310158",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MS",
+      "yfSym": "MS",
+      "cik2021": "0000895421",
+      "cikCurr": "0000895421",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MSCI",
+      "yfSym": "MSCI",
+      "cik2021": "0001408198",
+      "cikCurr": "0001408198",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MSI",
+      "yfSym": "MSI",
+      "cik2021": "0000068505",
+      "cikCurr": "0000068505",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MTB",
+      "yfSym": "MTB",
+      "cik2021": "0000036270",
+      "cikCurr": "0000036270",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "MTD",
+      "yfSym": "MTD",
+      "cik2021": "0001037646",
+      "cikCurr": "0001037646",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NCLH",
+      "yfSym": "NCLH",
+      "cik2021": "0001513761",
+      "cikCurr": "0001513761",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NEE",
+      "yfSym": "NEE",
+      "cik2021": "0000753308",
+      "cikCurr": "0000753308",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NEM",
+      "yfSym": "NEM",
+      "cik2021": "0001164727",
+      "cikCurr": "0001164727",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NI",
+      "yfSym": "NI",
+      "cik2021": "0001111711",
+      "cikCurr": "0001111711",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NKE",
+      "yfSym": "NKE",
+      "cik2021": "0000320187",
+      "cikCurr": "0000320187",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NOC",
+      "yfSym": "NOC",
+      "cik2021": "0001133421",
+      "cikCurr": "0001133421",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NOW",
+      "yfSym": "NOW",
+      "cik2021": "0001373715",
+      "cikCurr": "0001373715",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NRG",
+      "yfSym": "NRG",
+      "cik2021": "0001013871",
+      "cikCurr": "0001013871",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NSC",
+      "yfSym": "NSC",
+      "cik2021": "0000702165",
+      "cikCurr": "0000702165",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NUE",
+      "yfSym": "NUE",
+      "cik2021": "0000073309",
+      "cikCurr": "0000073309",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "NVR",
+      "yfSym": "NVR",
+      "cik2021": "0000906163",
+      "cikCurr": "0000906163",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "O",
+      "yfSym": "O",
+      "cik2021": "0000726728",
+      "cikCurr": "0000726728",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "OGN",
+      "yfSym": "OGN",
+      "cik2021": "0001821825",
+      "cikCurr": "0001821825",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "OKE",
+      "yfSym": "OKE",
+      "cik2021": "0001039684",
+      "cikCurr": "0001039684",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "OMC",
+      "yfSym": "OMC",
+      "cik2021": "0000029989",
+      "cikCurr": "0000029989",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ORCL",
+      "yfSym": "ORCL",
+      "cik2021": "0001341439",
+      "cikCurr": "0001341439",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "OTIS",
+      "yfSym": "OTIS",
+      "cik2021": "0001781335",
+      "cikCurr": "0001781335",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "OXY",
+      "yfSym": "OXY",
+      "cik2021": "0000797468",
+      "cikCurr": "0000797468",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PAYC",
+      "yfSym": "PAYC",
+      "cik2021": "0001590955",
+      "cikCurr": "0001590955",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PEAK",
+      "yfSym": "DOC",
+      "cik2021": "0000765880",
+      "cikCurr": "0000765880",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PEG",
+      "yfSym": "PEG",
+      "cik2021": "0000788784",
+      "cikCurr": "0000788784",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PFE",
+      "yfSym": "PFE",
+      "cik2021": "0000078003",
+      "cikCurr": "0000078003",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PFG",
+      "yfSym": "PFG",
+      "cik2021": "0001126328",
+      "cikCurr": "0001126328",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PG",
+      "yfSym": "PG",
+      "cik2021": "0000080424",
+      "cikCurr": "0000080424",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PGR",
+      "yfSym": "PGR",
+      "cik2021": "0000080661",
+      "cikCurr": "0000080661",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PH",
+      "yfSym": "PH",
+      "cik2021": "0000076334",
+      "cikCurr": "0000076334",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PHM",
+      "yfSym": "PHM",
+      "cik2021": "0000822416",
+      "cikCurr": "0000822416",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PKG",
+      "yfSym": "PKG",
+      "cik2021": "0000075677",
+      "cikCurr": "0000075677",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PKI",
+      "yfSym": "RVTY",
+      "cik2021": "0000031791",
+      "cikCurr": "0000031791",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PLD",
+      "yfSym": "PLD",
+      "cik2021": "0001045609",
+      "cikCurr": "0001045609",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PM",
+      "yfSym": "PM",
+      "cik2021": "0001413329",
+      "cikCurr": "0001413329",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PNC",
+      "yfSym": "PNC",
+      "cik2021": "0000713676",
+      "cikCurr": "0000713676",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PNR",
+      "yfSym": "PNR",
+      "cik2021": "0000077360",
+      "cikCurr": "0000077360",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PNW",
+      "yfSym": "PNW",
+      "cik2021": "0000764622",
+      "cikCurr": "0000764622",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PPG",
+      "yfSym": "PPG",
+      "cik2021": "0000079879",
+      "cikCurr": "0000079879",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PPL",
+      "yfSym": "PPL",
+      "cik2021": "0000922224",
+      "cikCurr": "0000922224",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PRU",
+      "yfSym": "PRU",
+      "cik2021": "0001137774",
+      "cikCurr": "0001137774",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PSA",
+      "yfSym": "PSA",
+      "cik2021": "0001393311",
+      "cikCurr": "0001393311",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PSX",
+      "yfSym": "PSX",
+      "cik2021": "0001534701",
+      "cikCurr": "0001534701",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PVH",
+      "yfSym": "PVH",
+      "cik2021": "0000078239",
+      "cikCurr": "0000078239",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "PWR",
+      "yfSym": "PWR",
+      "cik2021": "0001050915",
+      "cikCurr": "0001050915",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RCL",
+      "yfSym": "RCL",
+      "cik2021": "0000884887",
+      "cikCurr": "0000884887",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RE",
+      "yfSym": "EG",
+      "cik2021": "0001095073",
+      "cikCurr": "0001095073",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "REG",
+      "yfSym": "REG",
+      "cik2021": "0000910606",
+      "cikCurr": "0000910606",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RF",
+      "yfSym": "RF",
+      "cik2021": "0001281761",
+      "cikCurr": "0001281761",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RHI",
+      "yfSym": "RHI",
+      "cik2021": "0000315213",
+      "cikCurr": "0000315213",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RJF",
+      "yfSym": "RJF",
+      "cik2021": "0000720005",
+      "cikCurr": "0000720005",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RL",
+      "yfSym": "RL",
+      "cik2021": "0001037038",
+      "cikCurr": "0001037038",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RMD",
+      "yfSym": "RMD",
+      "cik2021": "0000943819",
+      "cikCurr": "0000943819",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ROK",
+      "yfSym": "ROK",
+      "cik2021": "0001024478",
+      "cikCurr": "0001024478",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ROL",
+      "yfSym": "ROL",
+      "cik2021": "0000084839",
+      "cikCurr": "0000084839",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ROP",
+      "yfSym": "ROP",
+      "cik2021": "0000882835",
+      "cikCurr": "0000882835",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RSG",
+      "yfSym": "RSG",
+      "cik2021": "0001060391",
+      "cikCurr": "0001060391",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "RTX",
+      "yfSym": "RTX",
+      "cik2021": "0000101829",
+      "cikCurr": "0000101829",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SCHW",
+      "yfSym": "SCHW",
+      "cik2021": "0000316709",
+      "cikCurr": "0000316709",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SHW",
+      "yfSym": "SHW",
+      "cik2021": "0000089800",
+      "cikCurr": "0000089800",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SJM",
+      "yfSym": "SJM",
+      "cik2021": "0000091419",
+      "cikCurr": "0000091419",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SLB",
+      "yfSym": "SLB",
+      "cik2021": "0000087347",
+      "cikCurr": "0000087347",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SNA",
+      "yfSym": "SNA",
+      "cik2021": "0000091440",
+      "cikCurr": "0000091440",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SO",
+      "yfSym": "SO",
+      "cik2021": "0000092122",
+      "cikCurr": "0000092122",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SPG",
+      "yfSym": "SPG",
+      "cik2021": "0001063761",
+      "cikCurr": "0001063761",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SPGI",
+      "yfSym": "SPGI",
+      "cik2021": "0000064040",
+      "cikCurr": "0000064040",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SRE",
+      "yfSym": "SRE",
+      "cik2021": "0001032208",
+      "cikCurr": "0001032208",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "STE",
+      "yfSym": "STE",
+      "cik2021": "0001757898",
+      "cikCurr": "0001757898",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "STT",
+      "yfSym": "STT",
+      "cik2021": "0000093751",
+      "cikCurr": "0000093751",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "STZ",
+      "yfSym": "STZ",
+      "cik2021": "0000016918",
+      "cikCurr": "0000016918",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SWK",
+      "yfSym": "SWK",
+      "cik2021": "0000093556",
+      "cikCurr": "0000093556",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SYF",
+      "yfSym": "SYF",
+      "cik2021": "0001601712",
+      "cikCurr": "0001601712",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SYK",
+      "yfSym": "SYK",
+      "cik2021": "0000310764",
+      "cikCurr": "0000310764",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "SYY",
+      "yfSym": "SYY",
+      "cik2021": "0000096021",
+      "cikCurr": "0000096021",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "T",
+      "yfSym": "T",
+      "cik2021": "0000732717",
+      "cikCurr": "0000732717",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TAP",
+      "yfSym": "TAP",
+      "cik2021": "0000024545",
+      "cikCurr": "0000024545",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TDG",
+      "yfSym": "TDG",
+      "cik2021": "0001260221",
+      "cikCurr": "0001260221",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TDY",
+      "yfSym": "TDY",
+      "cik2021": "0001094285",
+      "cikCurr": "0001094285",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TEL",
+      "yfSym": "TEL",
+      "cik2021": "0001385157",
+      "cikCurr": "0001385157",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TFC",
+      "yfSym": "TFC",
+      "cik2021": "0000092230",
+      "cikCurr": "0000092230",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TFX",
+      "yfSym": "TFX",
+      "cik2021": "0000096943",
+      "cikCurr": "0000096943",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TGT",
+      "yfSym": "TGT",
+      "cik2021": "0000027419",
+      "cikCurr": "0000027419",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TJX",
+      "yfSym": "TJX",
+      "cik2021": "0000109198",
+      "cikCurr": "0000109198",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TMO",
+      "yfSym": "TMO",
+      "cik2021": "0000097745",
+      "cikCurr": "0000097745",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TPR",
+      "yfSym": "TPR",
+      "cik2021": "0001116132",
+      "cikCurr": "0001116132",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TRV",
+      "yfSym": "TRV",
+      "cik2021": "0000086312",
+      "cikCurr": "0000086312",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TSN",
+      "yfSym": "TSN",
+      "cik2021": "0000100493",
+      "cikCurr": "0000100493",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TT",
+      "yfSym": "TT",
+      "cik2021": "0001466258",
+      "cikCurr": "0001466258",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TXT",
+      "yfSym": "TXT",
+      "cik2021": "0000217346",
+      "cikCurr": "0000217346",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "TYL",
+      "yfSym": "TYL",
+      "cik2021": "0000860731",
+      "cikCurr": "0000860731",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UA",
+      "yfSym": "UA",
+      "cik2021": "0001336917",
+      "cikCurr": "0001336917",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UDR",
+      "yfSym": "UDR",
+      "cik2021": "0000074208",
+      "cikCurr": "0000074208",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UHS",
+      "yfSym": "UHS",
+      "cik2021": "0000352915",
+      "cikCurr": "0000352915",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UNH",
+      "yfSym": "UNH",
+      "cik2021": "0000731766",
+      "cikCurr": "0000731766",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UNP",
+      "yfSym": "UNP",
+      "cik2021": "0000100885",
+      "cikCurr": "0000100885",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "UPS",
+      "yfSym": "UPS",
+      "cik2021": "0001090727",
+      "cikCurr": "0001090727",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "URI",
+      "yfSym": "URI",
+      "cik2021": "0001067701",
+      "cikCurr": "0001067701",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "USB",
+      "yfSym": "USB",
+      "cik2021": "0000036104",
+      "cikCurr": "0000036104",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "V",
+      "yfSym": "V",
+      "cik2021": "0001403161",
+      "cikCurr": "0001403161",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VFC",
+      "yfSym": "VFC",
+      "cik2021": "0000103379",
+      "cikCurr": "0000103379",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VLO",
+      "yfSym": "VLO",
+      "cik2021": "0001035002",
+      "cikCurr": "0001035002",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VMC",
+      "yfSym": "VMC",
+      "cik2021": "0001396009",
+      "cikCurr": "0001396009",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VNO",
+      "yfSym": "VNO",
+      "cik2021": "0000899689",
+      "cikCurr": "0000899689",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VTR",
+      "yfSym": "VTR",
+      "cik2021": "0000740260",
+      "cikCurr": "0000740260",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "VZ",
+      "yfSym": "VZ",
+      "cik2021": "0000732712",
+      "cikCurr": "0000732712",
+      "sector": "1983 (1877)",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WAB",
+      "yfSym": "WAB",
+      "cik2021": "0000943452",
+      "cikCurr": "0000943452",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WAT",
+      "yfSym": "WAT",
+      "cik2021": "0001000697",
+      "cikCurr": "0001000697",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WEC",
+      "yfSym": "WEC",
+      "cik2021": "0000783325",
+      "cikCurr": "0000783325",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WELL",
+      "yfSym": "WELL",
+      "cik2021": "0000766704",
+      "cikCurr": "0000766704",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WFC",
+      "yfSym": "WFC",
+      "cik2021": "0000072971",
+      "cikCurr": "0000072971",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WHR",
+      "yfSym": "WHR",
+      "cik2021": "0000106640",
+      "cikCurr": "0000106640",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WM",
+      "yfSym": "WM",
+      "cik2021": "0000823768",
+      "cikCurr": "0000823768",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WMB",
+      "yfSym": "WMB",
+      "cik2021": "0000107263",
+      "cikCurr": "0000107263",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WMT",
+      "yfSym": "WMT",
+      "cik2021": "0000104169",
+      "cikCurr": "0000104169",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WRB",
+      "yfSym": "WRB",
+      "cik2021": "0000011544",
+      "cikCurr": "0000011544",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WRK",
+      "yfSym": "SW",
+      "cik2021": "0001732845",
+      "cikCurr": "0002005951",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WST",
+      "yfSym": "WST",
+      "cik2021": "0000105770",
+      "cikCurr": "0000105770",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WU",
+      "yfSym": "WU",
+      "cik2021": "0001365135",
+      "cikCurr": "0001365135",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "WY",
+      "yfSym": "WY",
+      "cik2021": "0000106535",
+      "cikCurr": "0000106535",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "XOM",
+      "yfSym": "XOM",
+      "cik2021": "0000034088",
+      "cikCurr": "0002115436",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "XYL",
+      "yfSym": "XYL",
+      "cik2021": "0001524472",
+      "cikCurr": "0001524472",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "YUM",
+      "yfSym": "YUM",
+      "cik2021": "0001041061",
+      "cikCurr": "0001041061",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ZBH",
+      "yfSym": "ZBH",
+      "cik2021": "0001136869",
+      "cikCurr": "0001136869",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    },
+    {
+      "sym2021": "ZTS",
+      "yfSym": "ZTS",
+      "cik2021": "0001555280",
+      "cikCurr": "0001555280",
+      "sector": "Unknown",
+      "exchange": "NYSE"
+    }
+  ]
+}

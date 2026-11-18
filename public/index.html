@@ -205,17 +205,30 @@
 
     <!-- ==================== TAB 2: FICTITIOUS DEPOT BACKTEST ==================== -->
     <section id="backtest-view-root" class="hidden-panel" aria-label="Historical Fictitious Depot Backtest">
-      <div class="bt-toolbar">
-        <div class="bt-capital-group">
-          <label for="bt-capital-input">Starting Fictitious Depot ($):</label>
-          <input id="bt-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
-          <span style="font-size:0.76rem;color:var(--text-muted);">Daily Dip-Buyer + Monthly Depots · Dividends reinvested · 0.10% trading fee included</span>
+      <div class="bt-toolbar" style="flex-direction:column;align-items:stretch;gap:11px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+            <span style="font-size:0.79rem;font-weight:700;color:var(--text-primary);">Selection Bucket (Zero Hindsight):</span>
+            <div class="preset-pills" id="bt-universe-pills">
+              <button type="button" class="pill active" data-universe="sp100_2021" title="Exact 98 S&amp;P 100 US mega-caps as of Nov 30, 2021 — includes fallen angels (INTC, PYPL, BA, DIS, PFE) and excludes hindsight 2026 entrants (PLTR, MU, AMD)">Nov 2021 Mega-Caps (S&amp;P 100)</button>
+              <button type="button" class="pill" data-universe="nyse_2021" title="All 341 NYSE-listed S&amp;P 500 stocks as of Nov 30, 2021 across all sectors, including bankruptcies (First Republic Bank -&gt; $0)">Nov 2021 NYSE Bucket (341 Stocks)</button>
+              <button type="button" class="pill" data-universe="watchlist_2026" title="Today's 2026 watchlist backtested to 2021 — shown side-by-side to illustrate survivorship bias">2026 Watchlist (Biased Ref.)</button>
+            </div>
+          </div>
+
+          <div class="preset-pills" id="bt-horizon-pills">
+            <button type="button" class="pill active" data-horizon="5y">5 Years (Nov 2021–2026)</button>
+            <button type="button" class="pill" data-horizon="3y">3 Years (Nov 2023–2026)</button>
+            <button type="button" class="pill" data-horizon="1y">1 Year (Nov 2025–2026)</button>
+          </div>
         </div>
 
-        <div class="preset-pills" id="bt-horizon-pills">
-          <button type="button" class="pill active" data-horizon="5y">5 Years (Nov 2021–2026)</button>
-          <button type="button" class="pill" data-horizon="3y">3 Years (Nov 2023–2026)</button>
-          <button type="button" class="pill" data-horizon="1y">1 Year (Nov 2025–2026)</button>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-top:9px;border-top:1px solid var(--border-subtle);">
+          <div class="bt-capital-group">
+            <label for="bt-capital-input">Starting Fictitious Depot ($):</label>
+            <input id="bt-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
+            <span id="bt-universe-meta" style="font-size:0.76rem;color:var(--text-muted);">Survivorship-free Nov 2021 cohort · SEC filings gated by filing date · 0.10% trading fee</span>
+          </div>
         </div>
       </div>
 
@@ -229,7 +242,7 @@
             <span><i class="legend-swatch" style="background:var(--sig-dip-dot)"></i><strong>⚡ Daily Dip-Buyer</strong> (Oversold GARP Entries)</span>
             <span><i class="legend-swatch" style="background:var(--accent)"></i><strong>All Buys Depot</strong> (Monthly)</span>
             <span><i class="legend-swatch" style="background:var(--sig-strong-dot)"></i><strong>Strong Buy Only</strong></span>
-            <span><i class="legend-swatch" style="background:var(--sig-hold-dot)"></i><strong>Equal-Weight Watchlist</strong></span>
+            <span><i class="legend-swatch" style="background:var(--sig-hold-dot)"></i><strong>Equal-Weight Bucket</strong></span>
             <span><i class="legend-swatch" style="background:var(--text-muted)"></i><strong>S&amp;P 500 (SPY)</strong></span>
           </div>
           <span id="bt-chart-readout" class="tabular">Hover chart to inspect monthly depot value</span>

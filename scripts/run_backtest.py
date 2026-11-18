@@ -1,27 +1,33 @@
 #!/usr/bin/env python3
 """
-Point-in-Time Historical Backtest Engine for Stock Signal (Nov 2021 - Nov 2026).
+Survivorship-Bias-Free Point-in-Time Historical Backtest Engine for Stock Signal (Nov 2021 - Nov 2026).
+
+Universes Simulated:
+  1. `sp100_2021` (DEFAULT — Zero Hindsight): Exact 98 S&P 100 (`^OEX`) US Mega-Caps as of
+     November 30, 2021 (5 years ago), including subsequent laggards & crashes (`INTC`, `PYPL`,
+     `CHTR`, `NKE`, `PFE`, `BA`, `DIS`, `VZ`, `T`, `DOW`, `BIIB`, `TGT`, `CVS`, `MMM`, etc.)
+     and excluding stocks that only became mega-caps later (`PLTR`, `MU`, `AMD`, `UBER`, `NOW`).
+  2. `nyse_2021` (Zero Hindsight — Broad Exchange Bucket): All 341 NYSE-listed S&P 500 stocks
+     as of November 30, 2021 across all 11 sectors, including total wipeouts such as First
+     Republic Bank (`FRC`/`FRCB` -> $0.00, -100%).
+  3. `watchlist_2026` (Biased Reference): Today's 2026 watchlist backtested to 2021 to
+     transparently illustrate survivorship bias side-by-side.
 
 Methodology (Zero Look-Ahead Bias):
-  - Fundamentals: Pulled from official SEC EDGAR XBRL CompanyFacts (`data.sec.gov`)
-    for all US GAAP stocks in the Stock Signal universe. At each monthly rebalance
-    date `T`, ONLY 10-Q and 10-K filings with `filed <= T` (actual SEC filing date)
-    are visible to the scoring algorithm.
-  - Stock Splits & Dividends: Daily prices & total-return (`adjclose`) are pulled
-    from Yahoo Finance (`range=7y&interval=1d&events=splits`). Share counts and
-    per-share figures from SEC filings are normalized across split events strictly
-    using split dates so P/E and FCF Yield are 100% split-invariant.
-  - Transaction Costs: Deducts 10 bps (0.10%) per one-way portfolio turnover at
-    each monthly rebalance.
-  - Benchmarks: Compares against BOTH S&P 500 Total Return (`SPY`) AND an
-    Equal-Weight Universe benchmark (holding all universe stocks equally) plus the
-    `Expensive / Avoid` basket to isolate pure indicator alpha from universe bias.
+  - Fundamentals: Official SEC EDGAR XBRL CompanyFacts (`data.sec.gov`) gated strictly by
+    `filed <= T` (actual SEC filing date). Corporate holding-company reorganizations merge
+    2021 and current CIKs automatically.
+  - Stock Splits, Dual-Class Shares & Bankruptcies: Split-adjusted via Yahoo Finance split
+    events, cross-checked against GAAP Diluted EPS (`NetIncome / DilutedEPS`), with return
+    bounds down to `-100%` so bankruptcies (`FRCB`) are captured in full.
+  - Transaction Costs: Deducts 10 bps (0.10%) per one-way turnover on every trade.
 """
 
 from __future__ import annotations
 
 import bisect
 import datetime as dt
+import gc
 import json
 import math
 import statistics
@@ -35,13 +41,18 @@ from pathlib import Path
 from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+SCRIPTS_DIR = Path(__file__).resolve().parent
 DATA_DIR = ROOT_DIR / "public" / "data"
+UNIVERSES_2021_FILE = SCRIPTS_DIR / "universes_2021.json"
 BACKTEST_JSON_FILE = DATA_DIR / "backtest.json"
 BACKTEST_JS_FILE = DATA_DIR / "backtest_snapshot.js"
+
 SEC_CACHE_DIR = Path("/tmp/stock_signal_sec_cache")
+PIT_PARSED_DIR = Path("/tmp/stock_signal_pit_parsed_v2")
+YF_CACHE_DIR = Path("/tmp/stock_signal_yf_cache")
 
 SEC_HEADERS = {
-    "User-Agent": "StockSignalBacktest/1.0 (samuelburbulla-stock-signal; research@stocksignal.org)",
+    "User-Agent": "StockSignalBacktest/2.0 (samuelburbulla-stock-signal; research@stocksignal.org)",
     "Accept": "application/json",
 }
 YF_HEADERS = {
@@ -52,41 +63,42 @@ YF_HEADERS = {
     "Accept": "application/json",
 }
 
-# All 49 US SEC 10-Q/10-K GAAP stocks from Stock Signal's default universe
-UNIVERSE_META: dict[str, str] = {
-    "NVDA": "Technology", "GOOGL": "Communication Services", "META": "Communication Services",
-    "MSFT": "Technology", "AMZN": "Consumer Cyclical", "AAPL": "Technology",
-    "AVGO": "Technology", "AMD": "Technology", "ORCL": "Technology",
-    "CRM": "Technology", "ADBE": "Technology", "NOW": "Technology",
-    "PLTR": "Technology", "UBER": "Technology", "QCOM": "Technology",
-    "MU": "Technology", "INTC": "Technology",
+# Legacy 2026 watchlist (kept strictly as survivorship-bias reference)
+WATCHLIST_2026_META: dict[str, str] = {
+    "NVDA": "Information Technology", "GOOGL": "Communication Services", "META": "Communication Services",
+    "MSFT": "Information Technology", "AMZN": "Consumer Discretionary", "AAPL": "Information Technology",
+    "AVGO": "Information Technology", "AMD": "Information Technology", "ORCL": "Information Technology",
+    "CRM": "Information Technology", "ADBE": "Information Technology", "NOW": "Information Technology",
+    "PLTR": "Information Technology", "UBER": "Industrials", "QCOM": "Information Technology",
+    "MU": "Information Technology", "INTC": "Information Technology",
     "NFLX": "Communication Services", "DIS": "Communication Services", "TMUS": "Communication Services",
-    "COST": "Consumer Defensive", "WMT": "Consumer Defensive", "HD": "Consumer Cyclical",
-    "MCD": "Consumer Cyclical", "SBUX": "Consumer Cyclical", "NKE": "Consumer Cyclical",
-    "KO": "Consumer Defensive", "PEP": "Consumer Defensive", "TSLA": "Consumer Cyclical",
-    "JPM": "Financial Services", "BAC": "Financial Services", "GS": "Financial Services",
-    "V": "Financial Services", "MA": "Financial Services", "AXP": "Financial Services",
-    "BRK-B": "Financial Services", "SPGI": "Financial Services", "BLK": "Financial Services",
-    "LLY": "Healthcare", "UNH": "Healthcare", "ABBV": "Healthcare",
-    "JNJ": "Healthcare", "ISRG": "Healthcare", "MRK": "Healthcare",
+    "COST": "Consumer Staples", "WMT": "Consumer Staples", "HD": "Consumer Discretionary",
+    "MCD": "Consumer Discretionary", "SBUX": "Consumer Discretionary", "NKE": "Consumer Discretionary",
+    "KO": "Consumer Staples", "PEP": "Consumer Staples", "TSLA": "Consumer Discretionary",
+    "JPM": "Financials", "BAC": "Financials", "GS": "Financials",
+    "V": "Information Technology", "MA": "Information Technology", "AXP": "Financials",
+    "BRK-B": "Financials", "SPGI": "Financials", "BLK": "Financials",
+    "LLY": "Health Care", "UNH": "Health Care", "ABBV": "Health Care",
+    "JNJ": "Health Care", "ISRG": "Health Care", "MRK": "Health Care",
     "CAT": "Industrials", "GE": "Industrials", "XOM": "Energy", "CVX": "Energy",
 }
 
-BALANCE_SHEET_FIN_SYMS = {"JPM", "BAC", "GS", "AXP", "BRK-B", "BLK"}
+FINANCIAL_SECTORS = {"Financials", "Financial Services", "Real Estate"}
+PAYMENT_NETWORK_EXCEPTIONS = {"V", "MA", "PYPL", "FI", "FIS", "GPN", "ACN", "ADP", "PAYX"}
 
 _sec_rate_lock = threading.Lock()
 _last_sec_req = 0.0
 
 
-def sec_get_json(url: str) -> dict[str, Any]:
-    """Rate-limited SEC EDGAR fetcher (<8 req/sec per SEC fair-access policy) with disk cache."""
+def sec_fetch_raw_path(cik: str) -> Path:
+    """Downloads SEC XBRL JSON to disk cache without holding multi-file dicts in memory."""
     global _last_sec_req
     SEC_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_key = url.split("/")[-1]
-    cache_path = SEC_CACHE_DIR / cache_key
+    cache_path = SEC_CACHE_DIR / f"CIK{cik}.json"
     if cache_path.exists() and cache_path.stat().st_size > 200:
-        return json.loads(cache_path.read_text(encoding="utf-8"))
+        return cache_path
 
+    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
     for attempt in range(3):
         with _sec_rate_lock:
             elapsed = time.time() - _last_sec_req
@@ -95,18 +107,35 @@ def sec_get_json(url: str) -> dict[str, Any]:
             _last_sec_req = time.time()
         try:
             req = urllib.request.Request(url, headers=SEC_HEADERS)
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                raw = resp.read().decode("utf-8")
-                cache_path.write_text(raw, encoding="utf-8")
-                return json.loads(raw)
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                raw_bytes = resp.read()
+                cache_path.write_bytes(raw_bytes)
+                return cache_path
         except Exception as err:
             if attempt == 2:
                 raise RuntimeError(f"SEC fetch failed {url}: {err}") from err
             time.sleep(0.6 * (attempt + 1))
-    return {}
+    return cache_path
+
+
+def sec_get_small_json(url: str) -> dict[str, Any]:
+    SEC_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_path = SEC_CACHE_DIR / url.split("/")[-1]
+    if cache_path.exists() and cache_path.stat().st_size > 200:
+        return json.loads(cache_path.read_text(encoding="utf-8"))
+    req = urllib.request.Request(url, headers=SEC_HEADERS)
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        raw = resp.read().decode("utf-8")
+        cache_path.write_text(raw, encoding="utf-8")
+        return json.loads(raw)
 
 
 def yf_get_chart(symbol: str) -> dict[str, Any]:
+    YF_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cp = YF_CACHE_DIR / f"{symbol}.json"
+    if cp.exists() and cp.stat().st_size > 300:
+        return json.loads(cp.read_text(encoding="utf-8"))
+
     q_sym = urllib.parse.quote(symbol)
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{q_sym}?range=7y&interval=1d&events=splits"
     for attempt in range(3):
@@ -114,9 +143,11 @@ def yf_get_chart(symbol: str) -> dict[str, Any]:
         u = url.replace("query1", host)
         try:
             req = urllib.request.Request(u, headers=YF_HEADERS)
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=12) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                return data["chart"]["result"][0]
+                res = data["chart"]["result"][0]
+                cp.write_text(json.dumps(res), encoding="utf-8")
+                return res
         except Exception as err:
             if attempt == 2:
                 raise RuntimeError(f"YF chart failed {symbol}: {err}") from err
@@ -141,14 +172,48 @@ def clamp(val: float, lo: float = 0.0, hi: float = 100.0) -> float:
     return max(lo, min(hi, val))
 
 
-# --- SEC XBRL Point-in-Time Parser ---
 VALID_FORMS = {"10-Q", "10-K", "10-Q/A", "10-K/A"}
+
+REV_TAGS = [
+    "RevenueFromContractWithCustomerExcludingAssessedTax",
+    "Revenues",
+    "RevenuesNetOfInterestExpense",
+    "SalesRevenueNet",
+    "SalesRevenueGoodsNet",
+    "RegulatedAndUnregulatedOperatingRevenue",
+    "ElectricUtilityRevenue",
+    "InterestAndDividendIncomeOperating",
+    "HealthCareOrganizationRevenue",
+    "RealEstateRevenueNet",
+]
+NI_TAGS = [
+    "NetIncomeLoss",
+    "NetIncomeLossAvailableToCommonStockholdersBasic",
+    "ProfitLoss",
+]
+OP_TAGS = [
+    "OperatingIncomeLoss",
+    "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+]
+OCF_TAGS = [
+    "NetCashProvidedByUsedInOperatingActivities",
+    "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+]
+CAPEX_TAGS = [
+    "PaymentsToAcquirePropertyPlantAndEquipment",
+    "PaymentsToAcquireProductiveAssets",
+    "PaymentsToAcquireOtherPropertyPlantAndEquipment",
+]
+EPS_TAGS = ["EarningsPerShareDiluted", "EarningsPerShareBasic"]
+DILUTED_SH_TAGS = [
+    "WeightedAverageNumberOfDilutedSharesOutstanding",
+    "WeightedAverageNumberOfSharesOutstandingBasic",
+]
 
 
 def extract_flow_entries(gaap: dict[str, Any], tags: list[str], unit_name: str = "USD") -> list[dict[str, Any]]:
-    """Extracts deduplicated (start, end, val, filed, days) flow items across candidate GAAP tags."""
     out: list[dict[str, Any]] = []
-    for tag in tags:
+    for rank, tag in enumerate(tags):
         node = gaap.get(tag)
         if not node:
             continue
@@ -162,6 +227,8 @@ def extract_flow_entries(gaap: dict[str, Any], tags: list[str], unit_name: str =
             val = x.get("val")
             if not (start_s and end_s and filed_s and isinstance(val, (int, float))):
                 continue
+            if end_s < "2018-01-01":
+                continue
             try:
                 d_start = dt.date.fromisoformat(start_s)
                 d_end = dt.date.fromisoformat(end_s)
@@ -170,13 +237,11 @@ def extract_flow_entries(gaap: dict[str, Any], tags: list[str], unit_name: str =
             days = (d_end - d_start).days
             if 70 <= days <= 385:
                 out.append({
-                    "start": start_s,
                     "end": end_s,
-                    "d_end": d_end,
                     "days": days,
                     "val": float(val),
                     "filed": filed_s,
-                    "tag_rank": tags.index(tag),
+                    "tag_rank": rank,
                 })
     return out
 
@@ -184,7 +249,6 @@ def extract_flow_entries(gaap: dict[str, Any], tags: list[str], unit_name: str =
 def extract_instant_entries(
     facts: dict[str, Any], candidates: list[tuple[str, str, str]]
 ) -> list[dict[str, Any]]:
-    """Extracts point-in-time balance sheet / share count entries: (taxonomy, tag, unit)."""
     out: list[dict[str, Any]] = []
     for rank, (tax, tag, unit_name) in enumerate(candidates):
         arr = facts.get(tax, {}).get(tag, {}).get("units", {}).get(unit_name, [])
@@ -196,6 +260,8 @@ def extract_instant_entries(
             val = x.get("val")
             if not (end_s and filed_s and isinstance(val, (int, float))):
                 continue
+            if end_s < "2018-01-01":
+                continue
             out.append({
                 "end": end_s,
                 "val": float(val),
@@ -205,15 +271,74 @@ def extract_instant_entries(
     return out
 
 
+def load_sec_compact(cik: str) -> dict[str, list[dict[str, Any]]]:
+    """Extracts and caches a compact ~25KB point-in-time summary per SEC CIK (low RAM)."""
+    PIT_PARSED_DIR.mkdir(parents=True, exist_ok=True)
+    parsed_path = PIT_PARSED_DIR / f"CIK{cik}.json"
+    if parsed_path.exists() and parsed_path.stat().st_size > 50:
+        data = json.loads(parsed_path.read_text(encoding="utf-8"))
+        for k in ("rev", "ni", "op", "ocf", "capex", "eps", "div_paid", "div_ps"):
+            for e in data.get(k, []):
+                e["d_end"] = dt.date.fromisoformat(e["end"])
+        return data
+
+    raw_path = sec_fetch_raw_path(cik)
+    sec_data = json.loads(raw_path.read_text(encoding="utf-8"))
+    facts = sec_data.get("facts", {})
+    gaap = facts.get("us-gaap", {})
+
+    diluted_flow = extract_flow_entries(gaap, DILUTED_SH_TAGS, unit_name="shares")
+    share_instants = [
+        {"end": e["end"], "val": e["val"], "filed": e["filed"], "rank": 0}
+        for e in diluted_flow
+    ] + extract_instant_entries(facts, [
+        ("dei", "EntityCommonStockSharesOutstanding", "shares"),
+        ("us-gaap", "CommonStockSharesOutstanding", "shares"),
+    ])
+
+    compact = {
+        "rev": extract_flow_entries(gaap, REV_TAGS),
+        "ni": extract_flow_entries(gaap, NI_TAGS),
+        "op": extract_flow_entries(gaap, OP_TAGS),
+        "ocf": extract_flow_entries(gaap, OCF_TAGS),
+        "capex": extract_flow_entries(gaap, CAPEX_TAGS),
+        "eps": extract_flow_entries(gaap, EPS_TAGS, unit_name="USD/shares"),
+        "div_paid": extract_flow_entries(gaap, ["PaymentsOfDividendsCommonStock", "PaymentsOfDividends"]),
+        "div_ps": extract_flow_entries(
+            gaap, ["CommonStockDividendsPerShareDeclared", "CommonStockDividendsPerShareCashPaid"], unit_name="USD/shares"
+        ),
+        "shares": share_instants,
+        "eq": extract_instant_entries(facts, [
+            ("us-gaap", "StockholdersEquity", "USD"),
+            ("us-gaap", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest", "USD"),
+        ]),
+        "cash": extract_instant_entries(facts, [
+            ("us-gaap", "CashCashEquivalentsAndShortTermInvestments", "USD"),
+            ("us-gaap", "CashAndCashEquivalentsAtCarryingValue", "USD"),
+            ("us-gaap", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents", "USD"),
+        ]),
+        "debt": extract_instant_entries(facts, [
+            ("us-gaap", "LongTermDebtAndCapitalLeaseObligations", "USD"),
+            ("us-gaap", "LongTermDebt", "USD"),
+            ("us-gaap", "LongTermDebtNoncurrent", "USD"),
+        ]),
+    }
+
+    del sec_data, facts, gaap
+    gc.collect()
+
+    parsed_path.write_text(json.dumps(compact, separators=(",", ":")), encoding="utf-8")
+    for k in ("rev", "ni", "op", "ocf", "capex", "eps", "div_paid", "div_ps"):
+        for e in compact[k]:
+            e["d_end"] = dt.date.fromisoformat(e["end"])
+    return compact
+
+
 def compute_pit_ttm(
     entries: list[dict[str, Any]],
     cutoff_filed: str,
     max_end_date: dt.date | None = None,
 ) -> tuple[float | None, dt.date | None]:
-    """
-    Computes Trailing 12-Month (TTM) total strictly using filings with `filed <= cutoff_filed`
-    (and `d_end <= max_end_date` when computing 1-year-ago TTM for YoY growth).
-    """
     avail = [
         e for e in entries
         if e["filed"] <= cutoff_filed and (max_end_date is None or e["d_end"] <= max_end_date)
@@ -221,18 +346,17 @@ def compute_pit_ttm(
     if not avail:
         return None, None
 
-    # Deduplicate by (end, duration_bucket) picking preferred tag_rank then earliest filing
     by_period: dict[tuple[str, int], dict[str, Any]] = {}
     for e in avail:
         days = e["days"]
         if 70 <= days <= 112:
-            bucket = 1  # single quarter (~3m)
+            bucket = 1
         elif 160 <= days <= 205:
-            bucket = 2  # 6m YTD
+            bucket = 2
         elif 250 <= days <= 295:
-            bucket = 3  # 9m YTD
+            bucket = 3
         elif 340 <= days <= 385:
-            bucket = 4  # 12m Annual
+            bucket = 4
         else:
             continue
         key = (e["end"], bucket)
@@ -246,13 +370,11 @@ def compute_pit_ttm(
     latest_end = max(v["d_end"] for v in by_period.values())
     latest_end_s = latest_end.isoformat()
 
-    # Case 1: Latest period is a full 10-K Annual!
     if (latest_end_s, 4) in by_period:
         return by_period[(latest_end_s, 4)]["val"], latest_end
 
-    # Case 2: Sum of 4 consecutive ~90-day discrete quarters ending at latest_end
     q_entries = sorted(
-        [v for ( _, b), v in by_period.items() if b == 1 and v["d_end"] <= latest_end],
+        [v for (_, b), v in by_period.items() if b == 1 and v["d_end"] <= latest_end],
         key=lambda x: x["d_end"],
         reverse=True,
     )
@@ -267,12 +389,10 @@ def compute_pit_ttm(
         if len(picked) == 4:
             return sum(x["val"] for x in picked), latest_end
 
-    # Case 3: Annual_prev + YTD_curr - YTD_prior_year (essential for Cash Flow YTD statements!)
     for ytd_bucket in (3, 2, 1):
         if (latest_end_s, ytd_bucket) not in by_period:
             continue
         ytd_curr = by_period[(latest_end_s, ytd_bucket)]
-        # Find prior Annual ending ~ytd_bucket*91 days before latest_end
         annuals = [
             v for (_, b), v in by_period.items()
             if b == 4 and 65 <= (latest_end - v["d_end"]).days <= 305
@@ -291,38 +411,59 @@ def compute_pit_ttm(
 
 def latest_pit_instant(
     entries: list[dict[str, Any]], cutoff_filed: str
-) -> tuple[float | None, str | None]:
+) -> tuple[float | None, str | None, str | None]:
     avail = [e for e in entries if e["filed"] <= cutoff_filed]
     if not avail:
-        return None, None
-    # Sort by most recent end date, then preferred tag rank, then earliest filing
+        return None, None, None
     avail.sort(key=lambda e: (e["end"], -e["rank"], e["filed"]), reverse=True)
     best_end = avail[0]["end"]
     same_end = [e for e in avail if e["end"] == best_end]
     same_end.sort(key=lambda e: (e["rank"], e["filed"]))
-    return same_end[0]["val"], best_end
+    return same_end[0]["val"], best_end, same_end[0]["filed"]
 
 
-def compute_rsi_at(closes: list[float], end_idx: int, period: int = 14) -> float | None:
-    if end_idx < period + 1:
+def implied_pit_shares_from_eps(
+    ni_entries: list[dict[str, Any]],
+    eps_entries: list[dict[str, Any]],
+    splits: list[tuple[str, float]],
+    cutoff_filed: str,
+    symbol: str,
+) -> float | None:
+    """Computes implied diluted shares from a single filing's Net Income / Diluted EPS (never summing across splits)."""
+    eps_avail = [
+        e for e in eps_entries
+        if e["filed"] <= cutoff_filed
+        and abs(e["val"]) >= 0.08
+        and (70 <= e["days"] <= 112 or 340 <= e["days"] <= 385)
+    ]
+    if not eps_avail:
         return None
-    start = max(1, end_idx - 60)
-    gains: list[float] = []
-    losses: list[float] = []
-    for i in range(start, end_idx + 1):
-        diff = closes[i] - closes[i - 1]
-        gains.append(max(diff, 0.0))
-        losses.append(max(-diff, 0.0))
-    if len(gains) < period:
-        return None
-    avg_g = sum(gains[:period]) / period
-    avg_l = sum(losses[:period]) / period
-    for i in range(period, len(gains)):
-        avg_g = (avg_g * (period - 1) + gains[i]) / period
-        avg_l = (avg_l * (period - 1) + losses[i]) / period
-    if avg_l == 0:
-        return 100.0
-    return 100.0 - (100.0 / (1.0 + avg_g / avg_l))
+    eps_avail.sort(key=lambda e: (e["end"], -e["tag_rank"], e["filed"]), reverse=True)
+
+    ni_by_key: dict[tuple[str, int, str], dict[str, Any]] = {}
+    for n in ni_entries:
+        if n["filed"] <= cutoff_filed and abs(n["val"]) >= 1e6:
+            if 70 <= n["days"] <= 112:
+                b = 1
+            elif 340 <= n["days"] <= 385:
+                b = 4
+            else:
+                continue
+            k = (n["end"], b, n["filed"])
+            if k not in ni_by_key or n["tag_rank"] < ni_by_key[k]["tag_rank"]:
+                ni_by_key[k] = n
+
+    for e in eps_avail:
+        b = 1 if e["days"] <= 112 else 4
+        n = ni_by_key.get((e["end"], b, e["filed"]))
+        if n and (n["val"] * e["val"] > 0):
+            # Under ASC 260, splits occurring prior to `filed` are restated in that filing
+            eps_adj = e["val"] / split_factor_after(splits, e["filed"])
+            if symbol == "BRK-B" and abs(eps_adj) > 500:
+                eps_adj /= 1500.0
+            if abs(eps_adj) >= 0.05:
+                return abs(n["val"] / eps_adj)
+    return None
 
 
 def compute_rsi_series(closes: list[float], period: int = 14) -> list[float | None]:
@@ -342,12 +483,32 @@ def compute_rsi_series(closes: list[float], period: int = 14) -> list[float | No
     return out
 
 
+def precompute_tech_arrays(closes: list[float]) -> tuple[list[float], list[float | None], list[float]]:
+    n = len(closes)
+    dip20_arr = [0.0] * n
+    dist200_arr: list[float | None] = [None] * n
+    dd52_arr = [0.0] * n
+    run_sum = 0.0
+    for i in range(n):
+        c = closes[i]
+        run_sum += c
+        if i >= 200:
+            run_sum -= closes[i - 200]
+        cnt200 = min(i + 1, 200)
+        if cnt200 >= 120:
+            ma200 = run_sum / cnt200
+            if ma200 > 0:
+                dist200_arr[i] = (c - ma200) / ma200 * 100.0
+        h20 = max(closes[max(0, i - 19): i + 1])
+        if h20 > 0:
+            dip20_arr[i] = (c / h20 - 1.0) * 100.0
+        h252 = max(closes[max(0, i - 251): i + 1])
+        if h252 > 0:
+            dd52_arr[i] = (c / h252 - 1.0) * 100.0
+    return dip20_arr, dist200_arr, dd52_arr
+
+
 def score_pit_snapshot(m: dict[str, Any]) -> dict[str, Any]:
-    """
-    Point-in-time historical Stock Signal scorer using the exact same pillar curves
-    and valuation guardrails as `scripts/update_data.py` (re-normalized across the 4
-    strictly observable point-in-time pillars without look-ahead analyst targets).
-    """
     is_fin = m["is_financial"]
     pe = m.get("pe")
     peg = m.get("peg")
@@ -429,7 +590,6 @@ def score_pit_snapshot(m: dict[str, Any]) -> dict[str, Any]:
         time_parts.append((interp(dd_52w, [(-50, 58), (-28, 86), (-15, 78), (-5, 55), (0, 44)]), 0.20))
     timing_score = sum(s * w for s, w in time_parts) / sum(w for _, w in time_parts) if time_parts else 55.0
 
-    # Re-normalized weights across the 4 observable point-in-time pillars (35 : 20 : 20 : 10 -> / 0.85)
     total = (
         (0.35 / 0.85) * val_score
         + (0.20 / 0.85) * qual_score
@@ -457,7 +617,16 @@ def score_pit_snapshot(m: dict[str, Any]) -> dict[str, Any]:
     return {"score": score, "verdictKey": vk, "valScore": round(val_score, 1)}
 
 
-def load_stock_history(symbol: str, cik: str) -> dict[str, Any]:
+def split_factor_after(splits: list[tuple[str, float]], ref_date: str | dt.date) -> float:
+    ref_s = ref_date.isoformat() if isinstance(ref_date, dt.date) else ref_date
+    factor = 1.0
+    for s_date, ratio in splits:
+        if ref_s < s_date:
+            factor *= ratio
+    return factor
+
+
+def load_stock_entry(symbol: str, sector: str, ciks: list[str]) -> dict[str, Any]:
     chart = yf_get_chart(symbol)
     ts_list = chart.get("timestamp") or []
     quotes = chart.get("indicators", {}).get("quote", [{}])[0]
@@ -471,7 +640,7 @@ def load_stock_history(symbol: str, cik: str) -> dict[str, Any]:
         if isinstance(c, (int, float)) and isinstance(a, (int, float)) and not math.isnan(c) and not math.isnan(a):
             dates.append(dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc).strftime("%Y-%m-%d"))
             closes.append(float(c))
-            adjs.append(float(a))
+            adjs.append(float(max(a, 0.0)))
 
     splits_raw = chart.get("events", {}).get("splits") or {}
     splits: list[tuple[str, float]] = []
@@ -482,247 +651,183 @@ def load_stock_history(symbol: str, cik: str) -> dict[str, Any]:
             splits.append((s_date, ratio))
     splits.sort()
 
-    sec_data = sec_get_json(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json")
-    facts = sec_data.get("facts", {})
-    gaap = facts.get("us-gaap", {})
+    merged: dict[str, list[dict[str, Any]]] = {
+        k: [] for k in ("rev", "ni", "op", "ocf", "capex", "eps", "div_paid", "div_ps", "shares", "eq", "cash", "debt")
+    }
+    for cik in dict.fromkeys(ciks):
+        try:
+            comp = load_sec_compact(cik)
+            for k in merged:
+                merged[k].extend(comp.get(k, []))
+        except Exception:
+            pass
 
-    rev_entries = extract_flow_entries(gaap, [
-        "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "Revenues",
-        "RevenuesNetOfInterestExpense",
-        "SalesRevenueNet",
-        "SalesRevenueGoodsNet",
-    ])
-    ni_entries = extract_flow_entries(gaap, ["NetIncomeLoss", "ProfitLoss"])
-    op_entries = extract_flow_entries(gaap, [
-        "OperatingIncomeLoss",
-        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
-    ])
-    ocf_entries = extract_flow_entries(gaap, [
-        "NetCashProvidedByUsedInOperatingActivities",
-        "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
-    ])
-    capex_entries = extract_flow_entries(gaap, [
-        "PaymentsToAcquirePropertyPlantAndEquipment",
-        "PaymentsToAcquireProductiveAssets",
-        "PaymentsToAcquireOtherPropertyPlantAndEquipment",
-    ])
-    eps_entries = extract_flow_entries(gaap, ["EarningsPerShareDiluted", "EarningsPerShareBasic"], unit_name="USD/shares")
+    is_fin = (sector in FINANCIAL_SECTORS) and (symbol not in PAYMENT_NETWORK_EXCEPTIONS)
+    dip20_arr, dist200_arr, dd52_arr = precompute_tech_arrays(closes)
 
-    # Diluted shares from flow (90d or 365d) + instant cover-page shares fallback
-    diluted_flow = extract_flow_entries(gaap, [
-        "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "WeightedAverageNumberOfSharesOutstandingBasic",
-    ], unit_name="shares")
-    share_instants = [
-        {"end": e["end"], "val": e["val"], "filed": e["filed"], "rank": 0}
-        for e in diluted_flow
-    ] + extract_instant_entries(facts, [
-        ("dei", "EntityCommonStockSharesOutstanding", "shares"),
-        ("us-gaap", "CommonStockSharesOutstanding", "shares"),
-    ])
-
-    eq_instants = extract_instant_entries(facts, [
-        ("us-gaap", "StockholdersEquity", "USD"),
-        ("us-gaap", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest", "USD"),
-    ])
-    cash_instants = extract_instant_entries(facts, [
-        ("us-gaap", "CashCashEquivalentsAndShortTermInvestments", "USD"),
-        ("us-gaap", "CashAndCashEquivalentsAtCarryingValue", "USD"),
-        ("us-gaap", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents", "USD"),
-    ])
-    debt_instants = extract_instant_entries(facts, [
-        ("us-gaap", "LongTermDebtAndCapitalLeaseObligations", "USD"),
-        ("us-gaap", "LongTermDebt", "USD"),
-        ("us-gaap", "LongTermDebtNoncurrent", "USD"),
-    ])
-
-    div_paid_entries = extract_flow_entries(gaap, ["PaymentsOfDividendsCommonStock", "PaymentsOfDividends"])
-    div_ps_entries = extract_flow_entries(
-        gaap, ["CommonStockDividendsPerShareDeclared", "CommonStockDividendsPerShareCashPaid"], unit_name="USD/shares"
-    )
-
-    # For corporate holding-company reorganizations (e.g. XOM 2026 CIK 0002115436 + legacy 0000034088), merge legacy facts
-    if symbol == "XOM" and cik != "0000034088":
-        leg = sec_get_json("https://data.sec.gov/api/xbrl/companyfacts/CIK0000034088.json").get("facts", {})
-        leg_gaap = leg.get("us-gaap", {})
-        rev_entries += extract_flow_entries(leg_gaap, ["Revenues", "SalesRevenueNet", "RevenueFromContractWithCustomerExcludingAssessedTax"])
-        ni_entries += extract_flow_entries(leg_gaap, ["NetIncomeLoss", "ProfitLoss"])
-        op_entries += extract_flow_entries(leg_gaap, ["OperatingIncomeLoss", "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest"])
-        ocf_entries += extract_flow_entries(leg_gaap, ["NetCashProvidedByUsedInOperatingActivities"])
-        capex_entries += extract_flow_entries(leg_gaap, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"])
-        eps_entries += extract_flow_entries(leg_gaap, ["EarningsPerShareDiluted", "EarningsPerShareBasic"], unit_name="USD/shares")
-        leg_dil = extract_flow_entries(leg_gaap, ["WeightedAverageNumberOfDilutedSharesOutstanding"], unit_name="shares")
-        share_instants += [{"end": e["end"], "val": e["val"], "filed": e["filed"], "rank": 0} for e in leg_dil]
-        share_instants += extract_instant_entries(leg, [("dei", "EntityCommonStockSharesOutstanding", "shares")])
-        eq_instants += extract_instant_entries(leg, [("us-gaap", "StockholdersEquity", "USD")])
-        cash_instants += extract_instant_entries(leg, [("us-gaap", "CashAndCashEquivalentsAtCarryingValue", "USD")])
-        debt_instants += extract_instant_entries(leg, [("us-gaap", "LongTermDebt", "USD")])
+    filed_dates = sorted({
+        r["filed"]
+        for key in ("rev", "ni", "op", "ocf", "capex", "shares", "eps", "eq", "cash", "debt")
+        for r in merged[key]
+        if "filed" in r
+    })
 
     return {
         "symbol": symbol,
-        "sector": UNIVERSE_META[symbol],
-        "is_financial": symbol in BALANCE_SHEET_FIN_SYMS,
+        "sector": sector,
+        "is_financial": is_fin,
         "dates": dates,
         "closes": closes,
         "adjs": adjs,
         "splits": splits,
-        "rev": rev_entries,
-        "ni": ni_entries,
-        "op": op_entries,
-        "ocf": ocf_entries,
-        "capex": capex_entries,
-        "eps": eps_entries,
-        "div_paid": div_paid_entries,
-        "div_ps": div_ps_entries,
-        "shares": share_instants,
-        "eq": eq_instants,
-        "cash": cash_instants,
-        "debt": debt_instants,
+        "rsi14_arr": compute_rsi_series(closes, 14),
+        "rsi5_arr": compute_rsi_series(closes, 5),
+        "dip20_arr": dip20_arr,
+        "dist200_arr": dist200_arr,
+        "dd52_arr": dd52_arr,
+        "date_to_idx": {d: i for i, d in enumerate(dates)},
+        "filed_dates": filed_dates,
+        "fund_cache": {},
+        **merged,
     }
 
 
-def split_factor_after(splits: list[tuple[str, float]], ref_date: str) -> float:
-    factor = 1.0
-    for s_date, ratio in splits:
-        if ref_date < s_date:
-            factor *= ratio
-    return factor
-
-
-def evaluate_stock_at_date(st: dict[str, Any], eval_date: str) -> dict[str, Any] | None:
-    dates = st["dates"]
-    idx = bisect.bisect_right(dates, eval_date) - 1
-    if idx < 40:
-        return None
-    # Ensure stock is actively trading around eval_date
-    if (dt.date.fromisoformat(eval_date) - dt.date.fromisoformat(dates[idx])).days > 10:
-        return None
+def eval_stock_fast(st: dict[str, Any], d_str: str, exact_or_prev: bool = False) -> dict[str, Any] | None:
+    if exact_or_prev:
+        idx = bisect.bisect_right(st["dates"], d_str) - 1
+        if idx < 30:
+            return None
+        if (dt.date.fromisoformat(d_str) - dt.date.fromisoformat(st["dates"][idx])).days > 10:
+            return None
+    else:
+        idx = st["date_to_idx"].get(d_str)
+        if idx is None or idx < 25:
+            return None
 
     close_p = st["closes"][idx]
     adj_p = st["adjs"][idx]
     if close_p <= 0 or adj_p <= 0:
         return None
 
-    rev_ttm, rev_end = compute_pit_ttm(st["rev"], eval_date)
-    ni_ttm, ni_end = compute_pit_ttm(st["ni"], eval_date)
-    if ni_ttm is None and rev_ttm is None:
-        return None
+    f_dates = st["filed_dates"]
+    cache_dict = st["fund_cache"]
+    f_pos = bisect.bisect_right(f_dates, d_str) - 1
+    f_key = f_dates[f_pos] if f_pos >= 0 else "NONE"
+    sp_cnt = sum(1 for sp_d, _ in st["splits"] if sp_d <= d_str)
+    ck = (f_key, sp_cnt)
 
-    op_ttm, _ = compute_pit_ttm(st["op"], eval_date)
-    ocf_ttm, _ = compute_pit_ttm(st["ocf"], eval_date)
-    capex_ttm, _ = compute_pit_ttm(st["capex"], eval_date)
-    fcf_ttm = (ocf_ttm - abs(capex_ttm)) if (ocf_ttm is not None and capex_ttm is not None) else ocf_ttm
-
-    # YoY TTM Growth (comparing against TTM ~1 year prior, strictly filed <= eval_date!)
-    rev_growth: float | None = None
-    if rev_ttm is not None and rev_end is not None:
-        rev_prev, _ = compute_pit_ttm(st["rev"], eval_date, max_end_date=rev_end - dt.timedelta(days=330))
-        if rev_prev and rev_prev > 0:
-            rev_growth = clamp(((rev_ttm - rev_prev) / rev_prev) * 100.0, -70.0, 150.0)
-
-    eps_growth: float | None = None
-    if ni_ttm is not None and ni_end is not None:
-        ni_prev, _ = compute_pit_ttm(st["ni"], eval_date, max_end_date=ni_end - dt.timedelta(days=330))
-        if ni_prev and ni_prev > 0:
-            eps_growth = clamp(((ni_ttm - ni_prev) / ni_prev) * 100.0, -75.0, 150.0)
-        elif ni_prev and ni_prev < 0 < ni_ttm:
-            eps_growth = 45.0
-
-    # Determine split-adjusted Market Cap at eval_date
-    raw_sh, sh_end = latest_pit_instant(st["shares"], eval_date)
-    mcap: float | None = None
-    if raw_sh and sh_end and st["symbol"] not in ("BRK-B", "V"):
-        # Normalize occasional SEC XBRL millions-unit scaling quirks (e.g. 708.3 instead of 708,300,000)
-        norm_sh = raw_sh * 1_000_000.0 if (10.0 < raw_sh < 50_000.0) else (raw_sh * 1_000.0 if (50_000.0 <= raw_sh < 5_000_000.0) else raw_sh)
-        adj_sh = norm_sh * split_factor_after(st["splits"], sh_end)
-        mcap = adj_sh * close_p
-    else:
-        # Fallback 1: split-adjusted diluted EPS (handles Class-A/B share conversion ratios like BRK-B!)
-        eps_ttm, eps_end = compute_pit_ttm(st["eps"], eval_date)
-        if eps_ttm and eps_end and abs(eps_ttm) > 1e-4 and ni_ttm:
-            adj_eps = eps_ttm / split_factor_after(st["splits"], eps_end)
-            if st["symbol"] == "BRK-B" and abs(adj_eps) > 500:
-                adj_eps = adj_eps / 1500.0
-            implied_adj_shares = abs(ni_ttm / adj_eps)
-            mcap = implied_adj_shares * close_p
+    if ck not in cache_dict:
+        rev_ttm, rev_end = compute_pit_ttm(st["rev"], d_str)
+        ni_ttm, ni_end = compute_pit_ttm(st["ni"], d_str)
+        if ni_ttm is None and rev_ttm is None:
+            cache_dict[ck] = None
         else:
-            # Fallback 2: Total Cash Dividends Paid / Dividend Per Share (handles multi-class V!)
-            dp_ttm, dp_end = compute_pit_ttm(st["div_paid"], eval_date)
-            dps_ttm, dps_end = compute_pit_ttm(st["div_ps"], eval_date)
-            if dp_ttm and dps_ttm and dps_end and dps_ttm > 0.05:
-                adj_dps = dps_ttm / split_factor_after(st["splits"], dps_end)
-                mcap = (abs(dp_ttm) / adj_dps) * close_p
+            op_ttm, _ = compute_pit_ttm(st["op"], d_str)
+            ocf_ttm, _ = compute_pit_ttm(st["ocf"], d_str)
+            capex_ttm, _ = compute_pit_ttm(st["capex"], d_str)
+            fcf_ttm = (ocf_ttm - abs(capex_ttm)) if (ocf_ttm is not None and capex_ttm is not None) else ocf_ttm
 
-    if not mcap or mcap <= 0:
+            # Guard against one-time GAAP discontinued-ops / spin-off accounting spikes (e.g. T WarnerMedia spin)
+            core_ni = ni_ttm
+            if op_ttm is not None and op_ttm > 0 and ni_ttm is not None and ni_ttm > 2.2 * op_ttm:
+                core_ni = op_ttm * 0.78
+
+            rev_growth = None
+            if rev_ttm is not None and rev_end is not None:
+                rev_prev, _ = compute_pit_ttm(st["rev"], d_str, max_end_date=rev_end - dt.timedelta(days=330))
+                if rev_prev and rev_prev > 0:
+                    rev_growth = clamp(((rev_ttm - rev_prev) / rev_prev) * 100.0, -70.0, 150.0)
+
+            eps_growth = None
+            if core_ni is not None and ni_end is not None:
+                ni_prev, _ = compute_pit_ttm(st["ni"], d_str, max_end_date=ni_end - dt.timedelta(days=330))
+                if ni_prev and ni_prev > 0:
+                    eps_growth = clamp(((core_ni - ni_prev) / ni_prev) * 100.0, -75.0, 150.0)
+                elif ni_prev and ni_prev < 0 < core_ni:
+                    eps_growth = 45.0
+
+            sym = st["symbol"]
+            # Implied shares from single-filing Diluted EPS (immune to multi-quarter stock-split mixing)
+            adj_sh_eps = implied_pit_shares_from_eps(st["ni"], st["eps"], st["splits"], d_str, sym)
+
+            # Direct shares from SEC XBRL adjusted from filing date (`sh_filed`)
+            adj_sh_raw = None
+            raw_sh, sh_end, sh_filed = latest_pit_instant(st["shares"], d_str)
+            if raw_sh and sh_filed and sym not in ("BRK-B", "V", "BF-B"):
+                norm_sh = raw_sh * 1_000_000.0 if (1.0 < raw_sh < 25_000.0) else raw_sh
+                adj_sh_raw = norm_sh * split_factor_after(st["splits"], sh_filed)
+
+            adj_sh = None
+            if adj_sh_raw and adj_sh_eps:
+                ratio = adj_sh_raw / adj_sh_eps
+                adj_sh = adj_sh_raw if (0.55 <= ratio <= 1.8) else adj_sh_eps
+            elif adj_sh_raw:
+                adj_sh = adj_sh_raw
+            elif adj_sh_eps:
+                adj_sh = adj_sh_eps
+            else:
+                dp_ttm, _ = compute_pit_ttm(st["div_paid"], d_str)
+                dps_ttm, dps_end = compute_pit_ttm(st["div_ps"], d_str)
+                if dp_ttm and dps_ttm and dps_end and dps_ttm > 0.05:
+                    adj_dps = dps_ttm / split_factor_after(st["splits"], dps_end)
+                    adj_sh = abs(dp_ttm) / adj_dps
+                elif sym == "BRK-B":
+                    adj_sh = 2_180_000_000.0
+
+            eq_val, _, _ = latest_pit_instant(st["eq"], d_str)
+            cash_val, _, _ = latest_pit_instant(st["cash"], d_str)
+            debt_val, _, _ = latest_pit_instant(st["debt"], d_str)
+            cache_dict[ck] = {
+                "rev_ttm": rev_ttm, "ni_ttm": core_ni, "op_ttm": op_ttm, "fcf_ttm": fcf_ttm,
+                "rev_growth": rev_growth, "eps_growth": eps_growth, "adj_sh": adj_sh,
+                "eq_val": eq_val, "cash_val": cash_val, "debt_val": debt_val,
+            }
+
+    f = cache_dict[ck]
+    if not f or not f["adj_sh"] or f["adj_sh"] <= 0:
         return None
 
+    mcap = f["adj_sh"] * close_p
+    ni_ttm, rev_ttm, fcf_ttm = f["ni_ttm"], f["rev_ttm"], f["fcf_ttm"]
     pe = (mcap / ni_ttm) if (ni_ttm is not None and abs(ni_ttm) > 0) else None
-    # Forward-looking growth-adjusted P/E & PEG
-    effective_growth = None
-    if eps_growth is not None and rev_growth is not None:
-        effective_growth = 0.6 * eps_growth + 0.4 * rev_growth
-    elif eps_growth is not None:
-        effective_growth = eps_growth
-    elif rev_growth is not None:
-        effective_growth = rev_growth
+    eg, rg = f["eps_growth"], f["rev_growth"]
+    eff_g = (0.6 * eg + 0.4 * rg) if (eg is not None and rg is not None) else (eg if eg is not None else rg)
+    fwd_pe = pe / (1.0 + clamp(eff_g, -25.0, 45.0) / 100.0) if (pe and pe > 0 and eff_g is not None and eff_g > -30) else pe
+    peg = (fwd_pe / eff_g) if (fwd_pe and fwd_pe > 0 and eff_g and eff_g > 3.0) else None
+    fcf_y = (fcf_ttm / mcap * 100.0) if (fcf_ttm is not None and not st["is_financial"]) else None
+    if fcf_y is not None and abs(fcf_y) > 45.0:
+        fcf_y = None
 
-    fwd_pe_est = pe
-    if pe is not None and pe > 0 and effective_growth is not None and effective_growth > -30:
-        fwd_pe_est = pe / (1.0 + clamp(effective_growth, -25.0, 45.0) / 100.0)
-
-    peg = (fwd_pe_est / effective_growth) if (fwd_pe_est and fwd_pe_est > 0 and effective_growth and effective_growth > 3.0) else None
-    fcf_yield = (fcf_ttm / mcap * 100.0) if (fcf_ttm is not None and not st["is_financial"]) else None
-    if fcf_yield is not None and abs(fcf_yield) > 45.0:
-        fcf_yield = None
-
-    eq_val, _ = latest_pit_instant(st["eq"], eval_date)
-    cash_val, _ = latest_pit_instant(st["cash"], eval_date)
-    debt_val, _ = latest_pit_instant(st["debt"], eval_date)
-
+    eq_val, cash_val, debt_val = f["eq_val"], f["cash_val"], f["debt_val"]
     pb = (mcap / eq_val) if (eq_val and eq_val > 0) else None
     roe = (ni_ttm / eq_val * 100.0) if (ni_ttm is not None and eq_val and eq_val > 0) else None
-    debt_to_eq = (debt_val / eq_val) if (debt_val is not None and eq_val and eq_val > 0) else None
-    net_cash_pct = ((cash_val - (debt_val or 0.0)) / mcap * 100.0) if cash_val is not None else None
+    dte = (debt_val / eq_val) if (debt_val is not None and eq_val and eq_val > 0) else None
+    nc = ((cash_val - (debt_val or 0.0)) / mcap * 100.0) if cash_val is not None else None
+    op_m = (f["op_ttm"] / rev_ttm * 100.0) if (f["op_ttm"] is not None and rev_ttm and rev_ttm > 0) else None
+    net_m = (ni_ttm / rev_ttm * 100.0) if (ni_ttm is not None and rev_ttm and rev_ttm > 0) else None
 
-    op_margin = (op_ttm / rev_ttm * 100.0) if (op_ttm is not None and rev_ttm and rev_ttm > 0) else None
-    net_margin = (ni_ttm / rev_ttm * 100.0) if (ni_ttm is not None and rev_ttm and rev_ttm > 0) else None
-
-    # Technicals strictly up to idx (eval_date)
-    closes = st["closes"]
-    rsi14 = compute_rsi_at(closes, idx, 14)
-    w200 = closes[max(0, idx - 199): idx + 1]
-    ma200 = sum(w200) / len(w200) if len(w200) >= 120 else None
-    dist_200d = ((close_p - ma200) / ma200 * 100.0) if ma200 else None
-    w252 = closes[max(0, idx - 251): idx + 1]
-    high_52w = max(w252) if w252 else close_p
-    dd_52w = ((close_p - high_52w) / high_52w * 100.0) if high_52w > 0 else 0.0
+    rsi14 = st["rsi14_arr"][idx]
+    rsi5 = st["rsi5_arr"][idx]
+    dip20 = st["dip20_arr"][idx]
+    dist200 = st["dist200_arr"][idx]
+    dd52 = st["dd52_arr"][idx]
 
     scored = score_pit_snapshot({
         "is_financial": st["is_financial"],
-        "pe": fwd_pe_est,
-        "peg": peg,
-        "fcfYield": fcf_yield,
-        "pb": pb,
-        "opMargin": op_margin,
-        "netMargin": net_margin,
-        "roe": roe,
-        "debtToEq": debt_to_eq,
-        "netCashPct": net_cash_pct,
-        "revGrowth": rev_growth,
-        "epsGrowth": eps_growth,
-        "rsi14": rsi14,
-        "dist200d": dist_200d,
-        "dd52w": dd_52w,
+        "pe": fwd_pe, "peg": peg, "fcfYield": fcf_y, "pb": pb,
+        "opMargin": op_m, "netMargin": net_m, "roe": roe, "debtToEq": dte, "netCashPct": nc,
+        "revGrowth": rg, "epsGrowth": eg,
+        "rsi14": rsi14, "dist200d": dist200, "dd52w": dd52,
     })
-
     return {
         "symbol": st["symbol"],
         "adj": adj_p,
         "close": round(close_p, 2),
-        "pe": round(fwd_pe_est, 1) if fwd_pe_est else None,
+        "pe": round(fwd_pe, 1) if fwd_pe else None,
         "peg": round(peg, 2) if peg else None,
-        "rsi": round(rsi14, 0) if rsi14 else None,
+        "rsi14": rsi14,
+        "rsi5": rsi5,
+        "dip20": dip20,
         **scored,
     }
 
@@ -770,52 +875,22 @@ def compute_perf_stats(nav_series: list[float], bench_series: list[float]) -> di
     }
 
 
-def run_backtest() -> dict[str, Any]:
-    t0 = time.time()
-    print("Fetching SEC CIK map...")
-    cik_raw = sec_get_json("https://www.sec.gov/files/company_tickers.json")
-    cik_map = {v["ticker"].upper(): str(v["cik_str"]).zfill(10) for v in cik_raw.values()}
+def simulate_universe(
+    label: str,
+    badge: str,
+    methodology: str,
+    syms: list[str],
+    stocks_db: dict[str, dict[str, Any]],
+    rebalance_dates: list[str],
+    spy_rebal_adj: list[float],
+    sim_dates: list[str],
+    sim_spy: list[float],
+    max_buys: int = 25,
+    max_dip_pos: int = 6,
+) -> dict[str, Any]:
+    active_syms = [s for s in syms if s in stocks_db]
+    TX_COST_BPS = 0.0010
 
-    print("Fetching SPY S&P 500 Total-Return benchmark...")
-    spy_chart = yf_get_chart("SPY")
-    spy_dates: list[str] = []
-    spy_adjs: list[float] = []
-    for ts, a in zip(
-        spy_chart["timestamp"],
-        spy_chart["indicators"]["adjclose"][0]["adjclose"],
-    ):
-        if isinstance(a, (int, float)) and not math.isnan(a):
-            spy_dates.append(dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc).strftime("%Y-%m-%d"))
-            spy_adjs.append(float(a))
-
-    # Build monthly trading dates over the last 5 years: Nov 2021 -> Nov 2026 (61 dates = 60 months)
-    by_ym: dict[str, tuple[str, float]] = {}
-    for d_s, adj in zip(spy_dates, spy_adjs):
-        if d_s >= "2021-11-01":
-            by_ym[d_s[:7]] = (d_s, adj)  # keeps last trading day of each month (and latest day of Nov 2026)
-
-    ym_keys = sorted(by_ym.keys())
-    rebalance_dates = [by_ym[k][0] for k in ym_keys]
-    spy_rebal_adj = [by_ym[k][1] for k in ym_keys]
-
-    print(f"Loading 7Y price + point-in-time SEC EDGAR filings for {len(UNIVERSE_META)} stocks...")
-    stocks_db: dict[str, dict[str, Any]] = {}
-    with ThreadPoolExecutor(max_workers=5) as pool:
-        futs = {}
-        for sym in UNIVERSE_META:
-            cik = cik_map.get(sym) or cik_map.get(sym.replace("-", "."))
-            if cik:
-                futs[pool.submit(load_stock_history, sym, cik)] = sym
-        for fut in as_completed(futs):
-            sym = futs[fut]
-            try:
-                stocks_db[sym] = fut.result()
-            except Exception as exc:
-                print(f"  [warn] skipped {sym}: {exc}", file=sys.stderr)
-
-    print(f"Loaded {len(stocks_db)} stocks cleanly in {time.time() - t0:.1f}s. Running 60-month simulation...")
-
-    # Initialize $10,000 fictitious depots
     nav_strong = [10000.0]
     nav_all_buys = [10000.0]
     nav_spy = [10000.0]
@@ -824,7 +899,6 @@ def run_backtest() -> dict[str, Any]:
 
     prev_w_strong: dict[str, float] = {}
     prev_w_buys: dict[str, float] = {}
-    TX_COST_BPS = 0.0010  # 0.10% per one-way turnover
 
     checkpoints_log: list[dict[str, Any]] = []
     pick_forward_hits = 0
@@ -837,28 +911,28 @@ def run_backtest() -> dict[str, Any]:
         evals_now: list[dict[str, Any]] = []
         next_ret_map: dict[str, float] = {}
 
-        for sym, st in stocks_db.items():
-            ev = evaluate_stock_at_date(st, d_curr)
+        for sym in active_syms:
+            st = stocks_db[sym]
+            ev = eval_stock_fast(st, d_curr, exact_or_prev=True)
             if not ev:
                 continue
-            # Forward 1-month dividend-adjusted return from d_curr -> d_next
             idx_next = bisect.bisect_right(st["dates"], d_next) - 1
             if idx_next < 0:
                 continue
             adj_next = st["adjs"][idx_next]
-            ret_1m = (adj_next / ev["adj"]) - 1.0
-            # Guard against extreme data glitches
-            if -0.85 <= ret_1m <= 2.5:
+            ret_1m = (adj_next / ev["adj"]) - 1.0 if ev["adj"] > 0 else -1.0
+            # Include real bankruptcies (-100%) while guarding against unadjusted data spikes (>250% in 1m)
+            if -1.0 <= ret_1m <= 2.5:
                 evals_now.append(ev)
                 next_ret_map[sym] = ret_1m
 
         evals_now.sort(key=lambda x: x["score"], reverse=True)
 
-        # 1. Strong Buy Depot (at least 5 stocks for realistic diversification, max 12 top convictions)
+        # 1. Strong Buy Depot (top 5–12 convictions)
         strong_syms = [x["symbol"] for x in evals_now if x["verdictKey"] == "strong_buy"][:12]
         if len(strong_syms) < 5:
             fallback = [x["symbol"] for x in evals_now if x["verdictKey"] in ("strong_buy", "buy")]
-            strong_syms = fallback[:max(5, len(strong_syms))]
+            strong_syms = fallback[: max(5, len(strong_syms))]
         if not strong_syms:
             strong_syms = [x["symbol"] for x in evals_now[:5]]
 
@@ -870,8 +944,8 @@ def run_backtest() -> dict[str, Any]:
         prev_w_strong = w_strong
         r_strong = sum(w * next_ret_map[s] for s, w in w_strong.items()) - turnover_strong * TX_COST_BPS
 
-        # 2. All Buys (Strong + Good Buy) Depot
-        buy_syms = [x["symbol"] for x in evals_now if x["verdictKey"] in ("strong_buy", "buy")]
+        # 2. All Buys Depot (Strong + Good Buy, capped at top `max_buys` ranked by score)
+        buy_syms = [x["symbol"] for x in evals_now if x["verdictKey"] in ("strong_buy", "buy")][:max_buys]
         if len(buy_syms) < 5:
             buy_syms = [x["symbol"] for x in evals_now[:8]]
         w_buys = {s: 1.0 / len(buy_syms) for s in buy_syms}
@@ -882,19 +956,18 @@ def run_backtest() -> dict[str, Any]:
         prev_w_buys = w_buys
         r_buys = sum(w * next_ret_map[s] for s, w in w_buys.items()) - turnover_buys * TX_COST_BPS
 
-        # 3. Equal-Weight Universe Benchmark
+        # 3. Equal-Weight Universe Benchmark (zero-signal baseline on exact same universe!)
         r_univ = statistics.mean(next_ret_map[x["symbol"]] for x in evals_now) if evals_now else 0.0
 
-        # 4. Expensive / Avoid Basket (Avoid-rated or bottom 5 lowest-scored stocks)
+        # 4. Expensive / Avoid Basket
         avoid_syms = [x["symbol"] for x in evals_now if x["verdictKey"] == "avoid"]
-        if len(avoid_syms) < 4:
-            avoid_syms = [x["symbol"] for x in evals_now[-5:]]
+        if len(avoid_syms) < 5:
+            avoid_syms = [x["symbol"] for x in evals_now[-8:]]
         r_avoid = statistics.mean(next_ret_map[s] for s in avoid_syms) if avoid_syms else 0.0
 
         # 5. SPY Benchmark
         r_spy = (spy_rebal_adj[step + 1] / spy_rebal_adj[step]) - 1.0
 
-        # Track individual Strong Buy pick monthly outperformance vs SPY
         for s in strong_syms:
             pick_forward_total += 1
             if next_ret_map[s] > r_spy:
@@ -906,15 +979,14 @@ def run_backtest() -> dict[str, Any]:
         nav_eq_univ.append(nav_eq_univ[-1] * (1.0 + r_univ))
         nav_avoid.append(nav_avoid[-1] * (1.0 + r_avoid))
 
-        # Log quarterly checkpoints + latest rebalance for full transparency in UI
         if step % 3 == 0 or step == len(rebalance_dates) - 2:
             top_map = {x["symbol"]: x for x in evals_now}
             checkpoints_log.append({
                 "date": d_curr,
                 "nextDate": d_next,
-                "depotReturnPct": round(r_strong * 100.0, 2),
+                "depotReturnPct": round(r_buys * 100.0, 2),
                 "spyReturnPct": round(r_spy * 100.0, 2),
-                "holdingsCount": len(strong_syms),
+                "holdingsCount": len(buy_syms),
                 "topHoldings": [
                     {
                         "symbol": s,
@@ -935,150 +1007,12 @@ def run_backtest() -> dict[str, Any]:
                 ],
             })
 
-    # Annual Calendar Returns Breakdown (2022, 2023, 2024, 2025, 2026 YTD)
-    # First run the Daily Dip-Buyer Depot across all daily trading sessions (rebalance_dates[0] -> rebalance_dates[-1])
-    print("Running Daily Dip-Buyer Depot simulation across daily trading sessions...")
-    for sym, st in stocks_db.items():
-        st["rsi14_arr"] = compute_rsi_series(st["closes"], 14)
-        st["rsi5_arr"] = compute_rsi_series(st["closes"], 5)
-        st["date_to_idx"] = {d: i for i, d in enumerate(st["dates"])}
-
-    stock_fund_cache: dict[str, tuple[list[str], dict[Any, Any]]] = {}
-    for sym, st in stocks_db.items():
-        filed_dates = sorted({
-            r["filed"]
-            for key in ("rev", "ni", "op", "ocf", "capex", "shares", "eps", "eq", "cash", "debt")
-            for r in st.get(key, [])
-            if "filed" in r
-        })
-        stock_fund_cache[sym] = (filed_dates, {})
-
-    def eval_daily_pit(sym: str, d_str: str) -> dict[str, Any] | None:
-        st = stocks_db[sym]
-        idx = st["date_to_idx"].get(d_str)
-        if idx is None or idx < 20:
-            return None
-        close_p = st["closes"][idx]
-        adj_p = st["adjs"][idx]
-        if close_p <= 0 or adj_p <= 0:
-            return None
-
-        f_dates, cache_dict = stock_fund_cache[sym]
-        f_pos = bisect.bisect_right(f_dates, d_str) - 1
-        f_key = f_dates[f_pos] if f_pos >= 0 else "NONE"
-        sp_cnt = sum(1 for sp_d, _ in st["splits"] if sp_d <= d_str)
-        ck = (f_key, sp_cnt)
-
-        if ck not in cache_dict:
-            rev_ttm, rev_end = compute_pit_ttm(st["rev"], d_str)
-            ni_ttm, ni_end = compute_pit_ttm(st["ni"], d_str)
-            if ni_ttm is None and rev_ttm is None:
-                cache_dict[ck] = None
-            else:
-                op_ttm, _ = compute_pit_ttm(st["op"], d_str)
-                ocf_ttm, _ = compute_pit_ttm(st["ocf"], d_str)
-                capex_ttm, _ = compute_pit_ttm(st["capex"], d_str)
-                fcf_ttm = (ocf_ttm - abs(capex_ttm)) if (ocf_ttm is not None and capex_ttm is not None) else ocf_ttm
-                rev_growth = None
-                if rev_ttm is not None and rev_end is not None:
-                    rev_prev, _ = compute_pit_ttm(st["rev"], d_str, max_end_date=rev_end - dt.timedelta(days=330))
-                    if rev_prev and rev_prev > 0:
-                        rev_growth = clamp(((rev_ttm - rev_prev) / rev_prev) * 100.0, -70.0, 150.0)
-                eps_growth = None
-                if ni_ttm is not None and ni_end is not None:
-                    ni_prev, _ = compute_pit_ttm(st["ni"], d_str, max_end_date=ni_end - dt.timedelta(days=330))
-                    if ni_prev and ni_prev > 0:
-                        eps_growth = clamp(((ni_ttm - ni_prev) / ni_prev) * 100.0, -75.0, 150.0)
-                    elif ni_prev and ni_prev < 0 < ni_ttm:
-                        eps_growth = 45.0
-
-                raw_sh, sh_end = latest_pit_instant(st["shares"], d_str)
-                adj_sh = None
-                if raw_sh and sh_end and sym not in ("BRK-B", "V"):
-                    norm_sh = (
-                        raw_sh * 1_000_000.0
-                        if (10.0 < raw_sh < 50_000.0)
-                        else (raw_sh * 1_000.0 if (50_000.0 <= raw_sh < 5_000_000.0) else raw_sh)
-                    )
-                    adj_sh = norm_sh * split_factor_after(st["splits"], sh_end)
-                else:
-                    eps_ttm, eps_end = compute_pit_ttm(st["eps"], d_str)
-                    if eps_ttm and eps_end and abs(eps_ttm) > 1e-4 and ni_ttm:
-                        adj_eps = eps_ttm / split_factor_after(st["splits"], eps_end)
-                        if sym == "BRK-B" and abs(adj_eps) > 500:
-                            adj_eps /= 1500.0
-                        adj_sh = abs(ni_ttm / adj_eps)
-                    else:
-                        dp_ttm, _ = compute_pit_ttm(st["div_paid"], d_str)
-                        dps_ttm, dps_end = compute_pit_ttm(st["div_ps"], d_str)
-                        if dp_ttm and dps_ttm and dps_end and dps_ttm > 0.05:
-                            adj_dps = dps_ttm / split_factor_after(st["splits"], dps_end)
-                            adj_sh = abs(dp_ttm) / adj_dps
-
-                eq_val, _ = latest_pit_instant(st["eq"], d_str)
-                cash_val, _ = latest_pit_instant(st["cash"], d_str)
-                debt_val, _ = latest_pit_instant(st["debt"], d_str)
-                cache_dict[ck] = {
-                    "rev_ttm": rev_ttm, "ni_ttm": ni_ttm, "op_ttm": op_ttm, "fcf_ttm": fcf_ttm,
-                    "rev_growth": rev_growth, "eps_growth": eps_growth, "adj_sh": adj_sh,
-                    "eq_val": eq_val, "cash_val": cash_val, "debt_val": debt_val,
-                }
-
-        f = cache_dict[ck]
-        if not f or not f["adj_sh"] or f["adj_sh"] <= 0:
-            return None
-        mcap = f["adj_sh"] * close_p
-        ni_ttm, rev_ttm, fcf_ttm = f["ni_ttm"], f["rev_ttm"], f["fcf_ttm"]
-        pe = (mcap / ni_ttm) if (ni_ttm is not None and abs(ni_ttm) > 0) else None
-        eg, rg = f["eps_growth"], f["rev_growth"]
-        eff_g = (0.6 * eg + 0.4 * rg) if (eg is not None and rg is not None) else (eg if eg is not None else rg)
-        fwd_pe = pe / (1.0 + clamp(eff_g, -25.0, 45.0) / 100.0) if (pe and pe > 0 and eff_g is not None and eff_g > -30) else pe
-        peg = (fwd_pe / eff_g) if (fwd_pe and fwd_pe > 0 and eff_g and eff_g > 3.0) else None
-        fcf_y = (fcf_ttm / mcap * 100.0) if (fcf_ttm is not None and not st["is_financial"]) else None
-        if fcf_y is not None and abs(fcf_y) > 45.0:
-            fcf_y = None
-        eq_val, cash_val, debt_val = f["eq_val"], f["cash_val"], f["debt_val"]
-        pb = (mcap / eq_val) if (eq_val and eq_val > 0) else None
-        roe = (ni_ttm / eq_val * 100.0) if (ni_ttm is not None and eq_val and eq_val > 0) else None
-        dte = (debt_val / eq_val) if (debt_val is not None and eq_val and eq_val > 0) else None
-        nc = ((cash_val - (debt_val or 0.0)) / mcap * 100.0) if cash_val is not None else None
-        op_m = (f["op_ttm"] / rev_ttm * 100.0) if (f["op_ttm"] is not None and rev_ttm and rev_ttm > 0) else None
-        net_m = (ni_ttm / rev_ttm * 100.0) if (ni_ttm is not None and rev_ttm and rev_ttm > 0) else None
-
-        closes = st["closes"]
-        rsi14 = st["rsi14_arr"][idx]
-        rsi5 = st["rsi5_arr"][idx]
-        w20 = closes[max(0, idx - 19): idx + 1]
-        dip20 = (close_p / max(w20) - 1.0) * 100.0 if w20 else 0.0
-        w200 = closes[max(0, idx - 199): idx + 1]
-        ma200 = sum(w200) / len(w200) if len(w200) >= 120 else None
-        dist200 = ((close_p - ma200) / ma200 * 100.0) if ma200 else None
-        w252 = closes[max(0, idx - 251): idx + 1]
-        dd52 = ((close_p - max(w252)) / max(w252) * 100.0) if w252 else 0.0
-
-        scored = score_pit_snapshot({
-            "is_financial": st["is_financial"],
-            "pe": fwd_pe, "peg": peg, "fcfYield": fcf_y, "pb": pb,
-            "opMargin": op_m, "netMargin": net_m, "roe": roe, "debtToEq": dte, "netCashPct": nc,
-            "revGrowth": rg, "epsGrowth": eg,
-            "rsi14": rsi14, "dist200d": dist200, "dd52w": dd52,
-        })
-        return {
-            "symbol": sym, "adj": adj_p, "close": close_p,
-            "rsi14": rsi14, "rsi5": rsi5, "dip20": dip20,
-            **scored,
-        }
-
-    start_spy_idx = spy_dates.index(rebalance_dates[0])
-    end_spy_idx = spy_dates.index(rebalance_dates[-1])
-    sim_dates = spy_dates[start_spy_idx: end_spy_idx + 1]
-    sim_spy = spy_adjs[start_spy_idx: end_spy_idx + 1]
-
+    # 6. Daily Dip-Buyer Depot across all daily trading sessions
     daily_evals: list[dict[str, dict[str, Any]]] = []
     for d_s in sim_dates:
         row_ev: dict[str, dict[str, Any]] = {}
-        for sym in stocks_db:
-            ev_d = eval_daily_pit(sym, d_s)
+        for sym in active_syms:
+            ev_d = eval_stock_fast(stocks_db[sym], d_s, exact_or_prev=False)
             if ev_d:
                 row_ev[sym] = ev_d
         daily_evals.append(row_ev)
@@ -1087,7 +1021,6 @@ def run_backtest() -> dict[str, Any]:
     dip_holdings: dict[str, int] = {}
     prev_w_dip: dict[str, float] = {}
     dip_entries_count = 0
-    MAX_DIP_POS = 6
 
     for t in range(len(sim_dates) - 1):
         today_ev = daily_evals[t]
@@ -1109,12 +1042,12 @@ def run_backtest() -> dict[str, Any]:
         for sym in to_remove:
             del dip_holdings[sym]
 
-        if len(dip_holdings) < MAX_DIP_POS:
+        if len(dip_holdings) < max_dip_pos:
             cands = []
             for sym, ev_d in today_ev.items():
                 if sym in dip_holdings or sym not in tom_ev:
                     continue
-                if ev_d["score"] >= 62 and ev_d["valScore"] >= 46:
+                if ev_d["score"] >= 64 and ev_d["valScore"] >= 48:
                     is_dip = (
                         (ev_d["rsi14"] is not None and ev_d["rsi14"] <= 42.0)
                         or (ev_d["rsi5"] is not None and ev_d["rsi5"] <= 28.0)
@@ -1128,7 +1061,7 @@ def run_backtest() -> dict[str, Any]:
                         )
                         cands.append((dip_rank, sym))
             cands.sort(reverse=True)
-            for _, sym in cands[: (MAX_DIP_POS - len(dip_holdings))]:
+            for _, sym in cands[: (max_dip_pos - len(dip_holdings))]:
                 dip_holdings[sym] = t
                 dip_entries_count += 1
 
@@ -1152,8 +1085,8 @@ def run_backtest() -> dict[str, Any]:
             if k == "__SPY__":
                 r_day += wk * spy_r
             else:
-                sr = tom_ev[k]["adj"] / today_ev[k]["adj"] - 1.0
-                if -0.6 <= sr <= 1.0:
+                sr = (tom_ev[k]["adj"] / today_ev[k]["adj"] - 1.0) if today_ev[k]["adj"] > 0 else -1.0
+                if -1.0 <= sr <= 1.5:
                     r_day += wk * sr
         r_day -= turnover_dip * TX_COST_BPS
         dip_nav_daily.append(dip_nav_daily[-1] * (1.0 + r_day))
@@ -1178,7 +1111,6 @@ def run_backtest() -> dict[str, Any]:
             "avoidBasketPct": round((nav_avoid[end_i] / nav_avoid[start_i] - 1.0) * 100.0, 1),
         })
 
-    # Compute Multi-Horizon Summary Stats (5Y, 3Y, 1Y)
     def horizon_slice(months_back: int) -> dict[str, Any]:
         s_idx = max(0, len(rebalance_dates) - 1 - months_back)
         norm = lambda arr: [v / arr[s_idx] * 10000.0 for v in arr[s_idx:]]
@@ -1213,19 +1145,13 @@ def run_backtest() -> dict[str, Any]:
         for i in range(len(rebalance_dates))
     ]
 
-    payload = {
-        "generatedAt": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "initialCapital": 10000,
-        "universeCount": len(stocks_db),
+    return {
+        "label": label,
+        "badge": badge,
+        "universeCount": len(active_syms),
         "dipEntriesCount": dip_entries_count,
-        "rebalanceFrequency": "Daily Dip-Buyer (daily dip triggers, >=10d hold) & Monthly Core Depots (0.10% fee)",
-        "methodology": (
-            "Point-in-time historical simulation (Nov 2021 – Nov 2026) using official SEC EDGAR 10-Q/10-K filings "
-            "strictly gated by actual SEC filing dates (zero look-ahead bias) + dividend-reinvested Yahoo Finance "
-            "total-return series (0.10% trading fee deducted). Daily Dip-Buyer enters up to 6 high-score GARP stocks "
-            "on oversold daily pullbacks (RSI14 <= 42, RSI5 <= 28, or >=6% 20d dip) and holds until recovery (RSI >= 72)."
-        ),
         "pickBeatSpyRatePct": round((pick_forward_hits / pick_forward_total * 100.0) if pick_forward_total else 0.0, 1),
+        "methodology": methodology,
         "horizons": {
             "5y": horizon_slice(60),
             "3y": horizon_slice(36),
@@ -1234,6 +1160,148 @@ def run_backtest() -> dict[str, Any]:
         "yearly": yearly_breakdown,
         "series": series,
         "checkpoints": list(reversed(checkpoints_log)),
+    }
+
+
+def run_backtest() -> dict[str, Any]:
+    t0 = time.time()
+    print("Loading SEC CIK map & Nov-2021 historical constituent registries...")
+    cik_raw = sec_get_small_json("https://www.sec.gov/files/company_tickers.json")
+    cik_map = {v["ticker"].upper().replace(".", "-"): str(v["cik_str"]).zfill(10) for v in cik_raw.values()}
+
+    u2021 = json.loads(UNIVERSES_2021_FILE.read_text(encoding="utf-8"))
+    sp100_list = u2021["sp100_2021"]
+    nyse_list = u2021["nyse_2021"]
+
+    # Build unified stock spec registry (symbol -> {sector, ciks})
+    stock_specs: dict[str, dict[str, Any]] = {}
+    for item in sp100_list + nyse_list:
+        sym = item["yfSym"]
+        ciks = [item["cikCurr"], item["cik2021"]]
+        if sym == "XOM":
+            ciks.append("0000034088")
+        stock_specs[sym] = {"sector": item["sector"], "ciks": ciks}
+
+    for sym, sec in WATCHLIST_2026_META.items():
+        if sym not in stock_specs:
+            c = cik_map.get(sym)
+            if c:
+                ciks = [c, "0000034088"] if sym == "XOM" else [c]
+                stock_specs[sym] = {"sector": sec, "ciks": ciks}
+
+    print("Fetching SPY S&P 500 Total-Return benchmark...")
+    spy_chart = yf_get_chart("SPY")
+    spy_dates: list[str] = []
+    spy_adjs: list[float] = []
+    for ts, a in zip(spy_chart["timestamp"], spy_chart["indicators"]["adjclose"][0]["adjclose"]):
+        if isinstance(a, (int, float)) and not math.isnan(a):
+            spy_dates.append(dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc).strftime("%Y-%m-%d"))
+            spy_adjs.append(float(a))
+
+    by_ym: dict[str, tuple[str, float]] = {}
+    for d_s, adj in zip(spy_dates, spy_adjs):
+        if d_s >= "2021-11-01":
+            by_ym[d_s[:7]] = (d_s, adj)
+
+    ym_keys = sorted(by_ym.keys())
+    rebalance_dates = [by_ym[k][0] for k in ym_keys]
+    spy_rebal_adj = [by_ym[k][1] for k in ym_keys]
+
+    start_spy_idx = spy_dates.index(rebalance_dates[0])
+    end_spy_idx = spy_dates.index(rebalance_dates[-1])
+    sim_dates = spy_dates[start_spy_idx: end_spy_idx + 1]
+    sim_spy = spy_adjs[start_spy_idx: end_spy_idx + 1]
+
+    print(f"Loading 7Y prices + point-in-time SEC XBRL filings sequentially for {len(stock_specs)} unique stocks...")
+    stocks_db: dict[str, dict[str, Any]] = {}
+    for idx_s, (sym, spec) in enumerate(sorted(stock_specs.items()), 1):
+        try:
+            stocks_db[sym] = load_stock_entry(sym, spec["sector"], spec["ciks"])
+        except Exception as exc:
+            print(f"  [warn] skipped {sym}: {exc}", file=sys.stderr)
+        if idx_s % 100 == 0:
+            print(f"  ...loaded {idx_s}/{len(stock_specs)} stocks ({time.time() - t0:.1f}s)")
+
+    print(f"Loaded {len(stocks_db)} stocks cleanly in {time.time() - t0:.1f}s. Running multi-universe simulations...")
+
+    sp100_syms = [x["yfSym"] for x in sp100_list]
+    nyse_syms = [x["yfSym"] for x in nyse_list]
+    watch26_syms = list(WATCHLIST_2026_META.keys())
+
+    u_sp100 = simulate_universe(
+        label="Nov 2021 Mega-Caps (S&P 100)",
+        badge="Survivorship-Free · Default",
+        methodology=(
+            "Survivorship-bias-free simulation using the exact 98 S&P 100 (^OEX) US mega-caps as of November 30, 2021 "
+            "(5 years ago — includes fallen angels like INTC, PYPL, CHTR, NKE, PFE, BA, VZ, T, DOW, BIIB; excludes "
+            "hindsight 2026 entrants like PLTR, MU, AMD, UBER). Fundamentals strictly gated by SEC EDGAR filing date "
+            "(filed <= T), dividend-reinvested total return, 0.10% trading fee deducted."
+        ),
+        syms=sp100_syms,
+        stocks_db=stocks_db,
+        rebalance_dates=rebalance_dates,
+        spy_rebal_adj=spy_rebal_adj,
+        sim_dates=sim_dates,
+        sim_spy=sim_spy,
+        max_buys=20,
+        max_dip_pos=6,
+    )
+
+    u_nyse = simulate_universe(
+        label="Nov 2021 NYSE Bucket (341 Stocks)",
+        badge="Broad NYSE S&P 500",
+        methodology=(
+            "Broad exchange bucket comprising all 341 NYSE-listed S&P 500 stocks as of November 30, 2021 across all "
+            "11 sectors — including complete bankruptcies such as First Republic Bank (FRC -> $0.00, -100%). "
+            "Point-in-time SEC EDGAR 10-Q/10-K filings (filed <= T), top-25 Buy cap, 8-slot Daily Dip-Buyer, 0.10% fee."
+        ),
+        syms=nyse_syms,
+        stocks_db=stocks_db,
+        rebalance_dates=rebalance_dates,
+        spy_rebal_adj=spy_rebal_adj,
+        sim_dates=sim_dates,
+        sim_spy=sim_spy,
+        max_buys=25,
+        max_dip_pos=8,
+    )
+
+    u_watch26 = simulate_universe(
+        label="2026 Watchlist (Biased Ref.)",
+        badge="Hindsight Reference",
+        methodology=(
+            "Reference simulation using today's 2026-curated 48 US watchlist stocks backtested to Nov 2021. "
+            "Shown side-by-side to demonstrate survivorship bias: notice how the Equal-Weight Universe baseline jumps "
+            "from ~+72% (on 2021 cohorts) to +133% when stocks are selected with 2026 hindsight."
+        ),
+        syms=watch26_syms,
+        stocks_db=stocks_db,
+        rebalance_dates=rebalance_dates,
+        spy_rebal_adj=spy_rebal_adj,
+        sim_dates=sim_dates,
+        sim_spy=sim_spy,
+        max_buys=25,
+        max_dip_pos=6,
+    )
+
+    payload = {
+        "generatedAt": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "initialCapital": 10000,
+        "defaultUniverse": "sp100_2021",
+        "rebalanceFrequency": "Daily Dip-Buyer (>=10d hold) & Monthly Core Depots (0.10% fee)",
+        # Top-level defaults point to the unbiased Nov 2021 S&P 100 Mega-Cap universe!
+        "universeCount": u_sp100["universeCount"],
+        "dipEntriesCount": u_sp100["dipEntriesCount"],
+        "pickBeatSpyRatePct": u_sp100["pickBeatSpyRatePct"],
+        "methodology": u_sp100["methodology"],
+        "horizons": u_sp100["horizons"],
+        "yearly": u_sp100["yearly"],
+        "series": u_sp100["series"],
+        "checkpoints": u_sp100["checkpoints"],
+        "universes": {
+            "sp100_2021": u_sp100,
+            "nyse_2021": u_nyse,
+            "watchlist_2026": u_watch26,
+        },
     }
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -1245,27 +1313,26 @@ def run_backtest() -> dict[str, Any]:
 
 if __name__ == "__main__":
     res = run_backtest()
-    h5 = res["horizons"]["5y"]
-    print("\n=== 5-YEAR FICTITIOUS $10,000 DEPOT RESULTS ({} -> {}) ===".format(h5["startDate"], h5["endDate"]))
-    for name, key in [
-        ("Daily Dip-Buyer ", "dailyDip"),
-        ("All Buys Depot  ", "allBuys"),
-        ("Strong Buy Depot", "strongBuy"),
-        ("Equal-Wt Univ   ", "equalUniverse"),
-        ("S&P 500 (SPY)   ", "spy"),
-        ("Avoid Basket    ", "avoidBasket"),
-    ]:
-        st = h5[key]
-        print(
-            "  {} : ${:>9,.2f}  Total={:>+6.1f}%  CAGR={:>+5.2f}%/yr  MaxDD={:>6.1f}%  Sharpe={:.2f}".format(
-                name, st["finalValue10k"], st["totalReturnPct"], st["cagrPct"], st["maxDrawdownPct"], st["sharpe"]
+    for uk, u in res["universes"].items():
+        h5 = u["horizons"]["5y"]
+        print(f"\n=== [{uk}] {u['label']} ({u['universeCount']} stocks · {h5['startDate']} -> {h5['endDate']}) ===")
+        for name, key in [
+            ("Daily Dip-Buyer ", "dailyDip"),
+            ("All Buys Depot  ", "allBuys"),
+            ("Strong Buy Depot", "strongBuy"),
+            ("Equal-Wt Univ   ", "equalUniverse"),
+            ("S&P 500 (SPY)   ", "spy"),
+            ("Avoid Basket    ", "avoidBasket"),
+        ]:
+            st = h5[key]
+            print(
+                "  {} : ${:>9,.2f}  Total={:>+6.1f}%  CAGR={:>+5.2f}%/yr  MaxDD={:>6.1f}%  Sharpe={:.2f}".format(
+                    name, st["finalValue10k"], st["totalReturnPct"], st["cagrPct"], st["maxDrawdownPct"], st["sharpe"]
+                )
             )
-        )
-    print("\n=== YEAR-BY-YEAR RETURNS ===")
-    for y in res["yearly"]:
-        print(
-            "  {:8s}: DailyDip={:>+6.1f}% | AllBuys={:>+6.1f}% | StrongBuy={:>+6.1f}% | EqualUniv={:>+6.1f}% | SPY={:>+6.1f}% | Avoid={:>+6.1f}%".format(
-                y["year"], y["dailyDipPct"], y["allBuysPct"], y["strongBuyPct"], y["equalUnivPct"], y["spyPct"], y["avoidBasketPct"]
+        for y in u["yearly"]:
+            print(
+                "    {:8s}: Dip={:>+6.1f}% | AllBuys={:>+6.1f}% | Strong={:>+6.1f}% | EqUniv={:>+6.1f}% | SPY={:>+6.1f}% | Avoid={:>+6.1f}%".format(
+                    y["year"], y["dailyDipPct"], y["allBuysPct"], y["strongBuyPct"], y["equalUnivPct"], y["spyPct"], y["avoidBasketPct"]
+                )
             )
-        )
-

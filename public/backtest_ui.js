@@ -6,10 +6,19 @@
 
   const btState = {
     data: window.__BACKTEST_DATA__ || null,
+    universe: "sp100_2021", // 'sp100_2021' | 'nyse_2021' | 'watchlist_2026'
     horizon: "5y", // '5y' | '3y' | '1y'
     capital: 10000,
     activeTab: "screener",
   };
+
+  function getActiveUniv() {
+    if (!btState.data) return null;
+    if (btState.data.universes && btState.data.universes[btState.universe]) {
+      return btState.data.universes[btState.universe];
+    }
+    return btState.data;
+  }
 
   function fmtCurrency(val) {
     return "$" + Math.round(val).toLocaleString("en-US");
@@ -29,7 +38,8 @@
   }
 
   function getSlicedSeries() {
-    const all = (btState.data && btState.data.series) || [];
+    const u = getActiveUniv();
+    const all = (u && u.series) || [];
     if (!all.length) return [];
     const monthsBack = btState.horizon === "1y" ? 12 : btState.horizon === "3y" ? 36 : 60;
     const startIdx = Math.max(0, all.length - 1 - monthsBack);
@@ -51,17 +61,28 @@
 
   function renderKpis() {
     const grid = document.getElementById("bt-kpi-grid");
-    if (!grid || !btState.data) return;
-    const h = btState.data.horizons[btState.horizon];
+    const u = getActiveUniv();
+    if (!grid || !u) return;
+    const h = u.horizons[btState.horizon];
     if (!h) return;
     const scale = btState.capital / 10000.0;
+
+    const metaEl = document.getElementById("bt-universe-meta");
+    if (metaEl) {
+      metaEl.textContent = `${u.label || "Historical Cohort"} (${u.universeCount || "–"} stocks) · ${u.badge || ""} · Dividends reinvested · 0.10% trading fee`;
+    }
+
+    const bestSignalVal = Math.max(
+      h.dailyDip ? h.dailyDip.finalValue10k : 0,
+      h.allBuys.finalValue10k,
+      h.strongBuy.finalValue10k
+    );
 
     const cards = [];
     if (h.dailyDip) {
       cards.push({
         title: "⚡ Daily Dip-Buyer Depot",
-        badge: "Highest Alpha",
-        featured: true,
+        featured: h.dailyDip.finalValue10k === bestSignalVal,
         st: h.dailyDip,
         dot: "var(--sig-dip-dot)",
       });
@@ -69,28 +90,24 @@
     cards.push(
       {
         title: "All Buys Depot (Monthly)",
-        badge: "Core GARP",
-        featured: !h.dailyDip,
+        featured: h.allBuys.finalValue10k === bestSignalVal && (!h.dailyDip || h.dailyDip.finalValue10k < bestSignalVal),
         st: h.allBuys,
         dot: "var(--accent)",
       },
       {
         title: "Strong Buy Only Depot",
-        badge: "Top Convictions",
-        featured: false,
+        featured: h.strongBuy.finalValue10k === bestSignalVal && h.allBuys.finalValue10k < bestSignalVal && (!h.dailyDip || h.dailyDip.finalValue10k < bestSignalVal),
         st: h.strongBuy,
         dot: "var(--sig-strong-dot)",
       },
       {
-        title: "Equal-Weight Watchlist",
-        badge: "No-Signal Baseline",
+        title: `Equal-Weight Bucket (${u.universeCount || ""} Stocks)`,
         featured: false,
         st: h.equalUniverse,
         dot: "var(--sig-hold-dot)",
       },
       {
         title: "S&P 500 (SPY Total Return)",
-        badge: "Market Index",
         featured: false,
         st: h.spy,
         dot: "var(--text-muted)",
@@ -123,7 +140,7 @@
   function drawEquityChart() {
     const canvas = document.getElementById("bt-equity-canvas");
     const readout = document.getElementById("bt-chart-readout");
-    if (!canvas || !btState.data) return;
+    if (!canvas || !getActiveUniv()) return;
 
     const pts = getSlicedSeries();
     if (pts.length < 2) return;
@@ -255,7 +272,7 @@
       if (pt && readout) {
         readout.textContent = `${pt.date} · ⚡ Daily Dip ${fmtCurrency(pt.dailyDip)} · All Buys ${fmtCurrency(
           pt.allBuys
-        )} · SPY ${fmtCurrency(pt.spy)}`;
+        )} · Eq. Bucket ${fmtCurrency(pt.equalUniv)} · SPY ${fmtCurrency(pt.spy)}`;
       }
       paint(idx);
     };
@@ -267,10 +284,11 @@
   }
 
   function renderYearlyAndCheckpoints() {
-    if (!btState.data) return;
+    const u = getActiveUniv();
+    if (!u) return;
     const tbody = document.getElementById("bt-yearly-tbody");
     if (tbody) {
-      tbody.innerHTML = (btState.data.yearly || [])
+      tbody.innerHTML = (u.yearly || [])
         .map((y) => {
           const cls = (v) => (v > 0 ? "val-good" : v < 0 ? "val-bad" : "");
           return `<tr>
@@ -288,12 +306,12 @@
 
     const noteEl = document.getElementById("bt-methodology-note");
     if (noteEl) {
-      noteEl.textContent = btState.data.methodology || "";
+      noteEl.textContent = u.methodology || "";
     }
 
     const cpList = document.getElementById("bt-checkpoints-list");
     if (cpList) {
-      cpList.innerHTML = (btState.data.checkpoints || [])
+      cpList.innerHTML = (u.checkpoints || [])
         .map((cp) => {
           const diff = cp.depotReturnPct - cp.spyReturnPct;
           const cls = diff >= 0 ? "val-good" : "val-bad";
@@ -349,6 +367,16 @@
       switchMainTab("backtest");
     });
 
+    document.querySelectorAll("#bt-universe-pills .pill").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        btState.universe = btn.dataset.universe || "sp100_2021";
+        document
+          .querySelectorAll("#bt-universe-pills .pill")
+          .forEach((b) => b.classList.toggle("active", b === btn));
+        renderBacktestAll();
+      });
+    });
+
     document.querySelectorAll("#bt-horizon-pills .pill").forEach((btn) => {
       btn.addEventListener("click", () => {
         btState.horizon = btn.dataset.horizon || "5y";
@@ -381,13 +409,11 @@
       if (btState.activeTab === "backtest") drawEquityChart();
     });
 
-    // Try loading fresh backtest.json if available
-    if (!btState.data) {
-      try {
-        const r = await fetch(`./data/backtest.json?t=${Date.now()}`);
-        if (r.ok) btState.data = await r.json();
-      } catch (_) {}
-    }
+    // Always fetch fresh backtest.json when available so latest multi-universe payload loads
+    try {
+      const r = await fetch(`./data/backtest.json?t=${Date.now()}`, { cache: "no-store" });
+      if (r.ok) btState.data = await r.json();
+    } catch (_) {}
 
     renderBacktestAll();
     if (window.location.hash === "#backtest") {
