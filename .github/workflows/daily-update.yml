@@ -41,6 +41,8 @@ jobs:
           git diff --staged --quiet || (git commit -m "chore(data): daily stock valuation snapshot $(date -u +'%Y-%m-%d %H:%M UTC')" && git push origin HEAD:main)
 
       - name: Publish static site to gh-pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DEPLOY_DIR=$(mktemp -d)
           cp -R public/. "$DEPLOY_DIR/"
