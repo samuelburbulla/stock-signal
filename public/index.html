@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stock Signal — Daily Buy-Readiness & Valuation Screener</title>
-  <meta name="description" content="At-a-glance daily stock screener showing Buy, Hold, and Avoid signals with valuation multiples, quality, growth, RSI entry timing, and plain-English takeaways." />
+  <title>Stock Signal — Daily Buy-Readiness Screener &amp; 5Y Backtest</title>
+  <meta name="description" content="At-a-glance daily stock screener showing Buy, Hold, and Avoid signals with valuation multiples, RSI timing, plain-English takeaways, and a 5-year point-in-time historical depot backtest." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -14,15 +14,22 @@
   <div class="app-shell">
     <!-- Top Header -->
     <header class="topbar">
-      <div class="brand-group">
-        <div class="brand-title-row">
-          <span class="brand-mark" aria-hidden="true">S</span>
-          <h1>Stock Signal</h1>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+        <div class="brand-group">
+          <div class="brand-title-row">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <h1>Stock Signal</h1>
+          </div>
+          <div class="sync-meta">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span id="last-updated-text">Updated daily · Loading snapshot…</span>
+          </div>
         </div>
-        <div class="sync-meta">
-          <span class="live-dot" aria-hidden="true"></span>
-          <span id="last-updated-text">Updated daily · Loading snapshot…</span>
-        </div>
+
+        <nav class="main-nav-tabs" aria-label="Primary Views">
+          <button id="nav-tab-screener" type="button" class="main-nav-btn active">Today’s Screener</button>
+          <button id="nav-tab-backtest" type="button" class="main-nav-btn">5Y Depot Backtest</button>
+        </nav>
       </div>
 
       <div class="topbar-actions">
@@ -82,112 +89,177 @@
       </div>
     </section>
 
-    <!-- Clickable Signal Summary Buckets -->
-    <section class="signal-strip" aria-label="Filter by Buy Verdict">
-      <button id="bucket-all" type="button" class="signal-bucket active" data-verdict="all">
-        <div class="bucket-top">
-          <span class="bucket-label"><span class="bucket-dot" style="background:var(--accent)"></span>All Tracked</span>
-          <span id="count-all" class="bucket-count tabular">–</span>
-        </div>
-        <span class="bucket-desc">Full daily watchlist</span>
-      </button>
+    <!-- ==================== TAB 1: LIVE DAILY SCREENER ==================== -->
+    <div id="screener-view-root">
+      <!-- Clickable Signal Summary Buckets -->
+      <section class="signal-strip" aria-label="Filter by Buy Verdict">
+        <button id="bucket-all" type="button" class="signal-bucket active" data-verdict="all">
+          <div class="bucket-top">
+            <span class="bucket-label"><span class="bucket-dot" style="background:var(--accent)"></span>All Tracked</span>
+            <span id="count-all" class="bucket-count tabular">–</span>
+          </div>
+          <span class="bucket-desc">Full daily watchlist</span>
+        </button>
 
-      <button id="bucket-strong_buy" type="button" class="signal-bucket" data-verdict="strong_buy">
-        <div class="bucket-top">
-          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-strong-dot)"></span>Strong Buy</span>
-          <span id="count-strong_buy" class="bucket-count tabular">–</span>
-        </div>
-        <span class="bucket-desc">Score 78+ · Cheap &amp; high quality</span>
-      </button>
+        <button id="bucket-strong_buy" type="button" class="signal-bucket" data-verdict="strong_buy">
+          <div class="bucket-top">
+            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-strong-dot)"></span>Strong Buy</span>
+            <span id="count-strong_buy" class="bucket-count tabular">–</span>
+          </div>
+          <span class="bucket-desc">Score 78+ · Cheap &amp; high quality</span>
+        </button>
 
-      <button id="bucket-buy" type="button" class="signal-bucket" data-verdict="buy">
-        <div class="bucket-top">
-          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-buy-dot)"></span>Good Buy</span>
-          <span id="count-buy" class="bucket-count tabular">–</span>
-        </div>
-        <span class="bucket-desc">Score 65–77 · Solid value / GARP</span>
-      </button>
+        <button id="bucket-buy" type="button" class="signal-bucket" data-verdict="buy">
+          <div class="bucket-top">
+            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-buy-dot)"></span>Good Buy</span>
+            <span id="count-buy" class="bucket-count tabular">–</span>
+          </div>
+          <span class="bucket-desc">Score 65–77 · Solid value / GARP</span>
+        </button>
 
-      <button id="bucket-hold" type="button" class="signal-bucket" data-verdict="hold">
-        <div class="bucket-top">
-          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-hold-dot)"></span>Hold / Watch</span>
-          <span id="count-hold" class="bucket-count tabular">–</span>
-        </div>
-        <span class="bucket-desc">Good business, wait for pullback</span>
-      </button>
+        <button id="bucket-hold" type="button" class="signal-bucket" data-verdict="hold">
+          <div class="bucket-top">
+            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-hold-dot)"></span>Hold / Watch</span>
+            <span id="count-hold" class="bucket-count tabular">–</span>
+          </div>
+          <span class="bucket-desc">Good business, wait for pullback</span>
+        </button>
 
-      <button id="bucket-avoid" type="button" class="signal-bucket" data-verdict="avoid">
-        <div class="bucket-top">
-          <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-avoid-dot)"></span>Expensive / Avoid</span>
-          <span id="count-avoid" class="bucket-count tabular">–</span>
+        <button id="bucket-avoid" type="button" class="signal-bucket" data-verdict="avoid">
+          <div class="bucket-top">
+            <span class="bucket-label"><span class="bucket-dot" style="background:var(--sig-avoid-dot)"></span>Expensive / Avoid</span>
+            <span id="count-avoid" class="bucket-count tabular">–</span>
+          </div>
+          <span class="bucket-desc">Stretched valuation or weak setup</span>
+        </button>
+      </section>
+
+      <!-- Smart Presets + Search + View Mode -->
+      <section class="controls-bar" aria-label="Screening Presets and Filters">
+        <div class="preset-pills" id="preset-pills">
+          <button id="preset-all" type="button" class="pill active" data-preset="all">All</button>
+          <button id="preset-top_buys" type="button" class="pill" data-preset="top_buys">Best Buys Today</button>
+          <button id="preset-bargain_growth" type="button" class="pill" data-preset="bargain_growth">Bargain Growth (PEG ≤ 1.0)</button>
+          <button id="preset-oversold_dips" type="button" class="pill" data-preset="oversold_dips">Oversold Dips (RSI &lt; 38)</button>
+          <button id="preset-cash_cows" type="button" class="pill" data-preset="cash_cows">High Cash Flow (FCF ≥ 3.5%)</button>
         </div>
-        <span class="bucket-desc">Stretched valuation or weak setup</span>
-      </button>
+
+        <div class="filter-controls">
+          <input
+            id="filter-search-input"
+            class="search-input"
+            type="search"
+            placeholder="Filter symbol or name…"
+            aria-label="Filter stocks by ticker or company name"
+          />
+
+          <select id="sector-filter-select" class="select-control" aria-label="Filter by sector">
+            <option value="all">All Sectors</option>
+          </select>
+
+          <div class="view-toggle" role="group" aria-label="Display layout">
+            <button id="view-table-btn" type="button" class="view-btn active">Table</button>
+            <button id="view-cards-btn" type="button" class="view-btn">Cards</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Primary At-a-Glance Table -->
+      <main>
+        <div id="table-view-container" class="table-card">
+          <div class="table-scroll">
+            <table class="stock-table" id="stock-table">
+              <thead>
+                <tr>
+                  <th class="sortable sorted" data-sort="score" title="Composite Buy Score (1-99) combining Valuation, Quality, Growth, Upside, and Entry Timing">Signal ↓</th>
+                  <th class="sortable" data-sort="symbol">Company</th>
+                  <th title="5 Traffic-Light Pillars: Valuation, Quality, Growth, Analyst Upside, Technical Timing">Indicators (V·Q·G·U·T)</th>
+                  <th class="num sortable" data-sort="price">Price / 1D</th>
+                  <th class="num sortable" data-sort="forwardPE" title="Forward P/E (lower = cheaper relative to next 12m earnings). Green under 16.5x, Red above 33x.">Fwd P/E</th>
+                  <th class="num sortable" data-sort="pegRatio" title="PEG Ratio = P/E divided by expected EPS growth. Under 1.0x is considered a growth bargain.">PEG</th>
+                  <th class="num sortable" data-sort="fcfYield" title="Free Cash Flow Yield = annual Free Cash Flow / Market Cap (higher = more real cash return).">FCF Yield</th>
+                  <th class="num sortable" data-sort="revenueGrowth" title="Year-over-year Revenue Growth and blended EPS Growth">Rev / EPS Gr.</th>
+                  <th class="num sortable" data-sort="profitMargin" title="Net Profit Margin & Return on Equity">Net Margin</th>
+                  <th class="num sortable" data-sort="rsi14" title="14-Day Relative Strength Index. Under 37 = oversold pullback; above 70 = overbought.">RSI (14d)</th>
+                  <th class="num sortable" data-sort="targetUpsidePct" title="Implied upside or downside to Wall Street consensus mean price target">Target Upside</th>
+                  <th class="num" title="Current position within 52-week Low to High price range + 1-year price trend">52W &amp; 1Y Trend</th>
+                </tr>
+              </thead>
+              <tbody id="stock-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Optional Visual Cards Grid -->
+        <div id="cards-view-container" class="cards-grid"></div>
+      </main>
+    </div>
+
+    <!-- ==================== TAB 2: FICTITIOUS DEPOT BACKTEST ==================== -->
+    <section id="backtest-view-root" class="hidden-panel" aria-label="Historical Fictitious Depot Backtest">
+      <div class="bt-toolbar">
+        <div class="bt-capital-group">
+          <label for="bt-capital-input">Starting Fictitious Depot ($):</label>
+          <input id="bt-capital-input" class="bt-capital-input tabular" type="number" min="100" step="1000" value="10000" />
+          <span style="font-size:0.76rem;color:var(--text-muted);">Monthly rebalanced · Dividends reinvested · 0.10% trading fee included</span>
+        </div>
+
+        <div class="preset-pills" id="bt-horizon-pills">
+          <button type="button" class="pill active" data-horizon="5y">5 Years (Nov 2021–2026)</button>
+          <button type="button" class="pill" data-horizon="3y">3 Years (Nov 2023–2026)</button>
+          <button type="button" class="pill" data-horizon="1y">1 Year (Nov 2025–2026)</button>
+        </div>
+      </div>
+
+      <!-- 4 Strategy Comparison Scorecards -->
+      <div id="bt-kpi-grid" class="bt-kpi-grid"></div>
+
+      <!-- Equity Curve Chart -->
+      <div class="bt-chart-card">
+        <div class="chart-legend" style="margin-bottom:10px;">
+          <div class="legend-items" style="flex-wrap:wrap;gap:14px;">
+            <span><i class="legend-swatch" style="background:var(--accent)"></i><strong>All Buys Depot</strong> (Strong + Good Buy)</span>
+            <span><i class="legend-swatch" style="background:var(--sig-strong-dot)"></i><strong>Strong Buy Only</strong> (Top Picks)</span>
+            <span><i class="legend-swatch" style="background:var(--sig-hold-dot)"></i><strong>Equal-Weight Watchlist</strong></span>
+            <span><i class="legend-swatch" style="background:var(--text-muted)"></i><strong>S&amp;P 500 (SPY)</strong></span>
+          </div>
+          <span id="bt-chart-readout" class="tabular">Hover chart to inspect monthly depot value</span>
+        </div>
+        <canvas id="bt-equity-canvas"></canvas>
+      </div>
+
+      <!-- Calendar Year Table + Historical Rebalance Checkpoints -->
+      <div class="bt-two-col">
+        <div class="bt-panel-box">
+          <h3>Calendar Year Returns (2022 Bear Market → 2026 YTD)</h3>
+          <div class="table-scroll">
+            <table class="stock-table" id="bt-yearly-table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th class="num">All Buys</th>
+                  <th class="num">Strong Buy</th>
+                  <th class="num">Equal Univ.</th>
+                  <th class="num">S&amp;P 500</th>
+                  <th class="num">Avoid Basket</th>
+                </tr>
+              </thead>
+              <tbody id="bt-yearly-tbody"></tbody>
+            </table>
+          </div>
+          <p id="bt-methodology-note" style="margin:12px 0 0;font-size:0.76rem;color:var(--text-muted);line-height:1.45;"></p>
+        </div>
+
+        <div class="bt-panel-box">
+          <h3>Historical Quarterly Rebalance Log (Point-in-Time SEC Filings)</h3>
+          <div id="bt-checkpoints-list" class="bt-checkpoint-list"></div>
+        </div>
+      </div>
     </section>
-
-    <!-- Smart Presets + Search + View Mode -->
-    <section class="controls-bar" aria-label="Screening Presets and Filters">
-      <div class="preset-pills" id="preset-pills">
-        <button id="preset-all" type="button" class="pill active" data-preset="all">All</button>
-        <button id="preset-top_buys" type="button" class="pill" data-preset="top_buys">Best Buys Today</button>
-        <button id="preset-bargain_growth" type="button" class="pill" data-preset="bargain_growth">Bargain Growth (PEG ≤ 1.0)</button>
-        <button id="preset-oversold_dips" type="button" class="pill" data-preset="oversold_dips">Oversold Dips (RSI &lt; 38)</button>
-        <button id="preset-cash_cows" type="button" class="pill" data-preset="cash_cows">High Cash Flow (FCF ≥ 3.5%)</button>
-      </div>
-
-      <div class="filter-controls">
-        <input
-          id="filter-search-input"
-          class="search-input"
-          type="search"
-          placeholder="Filter symbol or name…"
-          aria-label="Filter stocks by ticker or company name"
-        />
-
-        <select id="sector-filter-select" class="select-control" aria-label="Filter by sector">
-          <option value="all">All Sectors</option>
-        </select>
-
-        <div class="view-toggle" role="group" aria-label="Display layout">
-          <button id="view-table-btn" type="button" class="view-btn active">Table</button>
-          <button id="view-cards-btn" type="button" class="view-btn">Cards</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Primary At-a-Glance Table -->
-    <main>
-      <div id="table-view-container" class="table-card">
-        <div class="table-scroll">
-          <table class="stock-table" id="stock-table">
-            <thead>
-              <tr>
-                <th class="sortable sorted" data-sort="score" title="Composite Buy Score (1-99) combining Valuation, Quality, Growth, Upside, and Entry Timing">Signal ↓</th>
-                <th class="sortable" data-sort="symbol">Company</th>
-                <th title="5 Traffic-Light Pillars: Valuation, Quality, Growth, Analyst Upside, Technical Timing">Indicators (V·Q·G·U·T)</th>
-                <th class="num sortable" data-sort="price">Price / 1D</th>
-                <th class="num sortable" data-sort="forwardPE" title="Forward P/E (lower = cheaper relative to next 12m earnings). Green under 16.5x, Red above 33x.">Fwd P/E</th>
-                <th class="num sortable" data-sort="pegRatio" title="PEG Ratio = P/E divided by expected EPS growth. Under 1.0x is considered a growth bargain.">PEG</th>
-                <th class="num sortable" data-sort="fcfYield" title="Free Cash Flow Yield = annual Free Cash Flow / Market Cap (higher = more real cash return).">FCF Yield</th>
-                <th class="num sortable" data-sort="revenueGrowth" title="Year-over-year Revenue Growth and blended EPS Growth">Rev / EPS Gr.</th>
-                <th class="num sortable" data-sort="profitMargin" title="Net Profit Margin & Return on Equity">Net Margin</th>
-                <th class="num sortable" data-sort="rsi14" title="14-Day Relative Strength Index. Under 37 = oversold pullback; above 70 = overbought.">RSI (14d)</th>
-                <th class="num sortable" data-sort="targetUpsidePct" title="Implied upside or downside to Wall Street consensus mean price target">Target Upside</th>
-                <th class="num" title="Current position within 52-week Low to High price range + 1-year price trend">52W &amp; 1Y Trend</th>
-              </tr>
-            </thead>
-            <tbody id="stock-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Optional Visual Cards Grid -->
-      <div id="cards-view-container" class="cards-grid"></div>
-    </main>
 
     <footer class="disclaimer-footer">
-      <span>Data sourced from Yahoo Finance (real-time quotes &amp; TTM/forward consensus fundamentals). Automatically refreshed every trading day.</span>
-      <span>For informational screening only — not personalized financial advice. Click any stock row to inspect full numbers.</span>
+      <span>Data sourced from Yahoo Finance &amp; official SEC EDGAR XBRL filings (data.sec.gov). Automatically refreshed every trading day.</span>
+      <span>Historical backtests are hypothetical and do not guarantee future returns — not personalized financial advice.</span>
     </footer>
   </div>
 
@@ -198,6 +270,8 @@
   </aside>
 
   <script src="data/stocks_snapshot.js"></script>
+  <script src="data/backtest_snapshot.js"></script>
   <script src="app.js"></script>
+  <script src="backtest_ui.js"></script>
 </body>
 </html>

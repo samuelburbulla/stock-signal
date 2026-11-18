@@ -26,4 +26,9 @@ The server:
 
 ## Automated Cloud Daily Updates (GitHub Actions)
 
-[`.github/workflows/daily-update.yml`](.github/workflows/daily-update.yml) runs `python3 scripts/update_data.py` automatically every weekday at 21:30 UTC and commits the updated snapshot (`public/data/stocks.json` and `public/data/stocks_snapshot.js`), so the app also works 24/7 on static hosts such as GitHub Pages.
+[`.github/workflows/daily-update.yml`](.github/workflows/daily-update.yml) runs `python3 scripts/update_data.py` automatically every weekday at 14:00 UTC and 21:30 UTC and deploys the updated snapshot (`public/data/stocks.json` and `public/data/stocks_snapshot.js`) to GitHub Pages.
+
+## 5-Year Point-in-Time Depot Backtest
+
+[`scripts/run_backtest.py`](scripts/run_backtest.py) simulates a `$10,000` monthly-rebalanced depot over 5 years (`60` monthly rebalances, dividend-reinvested `adjclose`, `0.10%` turnover fee) strictly gated by official SEC EDGAR XBRL `filed <= eval_date` dates to prevent look-ahead bias, writing [`public/data/backtest.json`](public/data/backtest.json) for the interactive **5Y Depot Backtest** (`#backtest`) view.
+
