@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-18T21:44:55Z",
+  "updatedAt": "2026-11-19T02:41:29Z",
   "prevSignals": {
     "TSM": {
       "price": 362.62,
@@ -289,19 +289,19 @@
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "SPCX": {
-      "price": 143.5,
-      "score": 61,
-      "verdictKey": "hold",
-      "dipKey": "neutral",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
     "SPY": {
       "price": 730.2,
       "score": 61,
       "verdictKey": "hold",
       "dipKey": "pullback",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
+    "SPCX": {
+      "price": 143.5,
+      "score": 61,
+      "verdictKey": "hold",
+      "dipKey": "neutral",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
@@ -312,6 +312,14 @@
       "dipKey": "pullback",
       "valuationZone": "expensive",
       "isFallingKnife": false
+    },
+    "NVDA": {
+      "price": 150.96,
+      "score": 57,
+      "verdictKey": "hold",
+      "dipKey": "falling_knife",
+      "valuationZone": "cheap",
+      "isFallingKnife": true
     },
     "NOW": {
       "price": 90.59,
@@ -344,14 +352,6 @@
       "dipKey": "neutral",
       "valuationZone": "expensive",
       "isFallingKnife": false
-    },
-    "NVDA": {
-      "price": 150.96,
-      "score": 55,
-      "verdictKey": "hold",
-      "dipKey": "falling_knife",
-      "valuationZone": "cheap",
-      "isFallingKnife": true
     },
     "BRK-B": {
       "price": 574.62,
@@ -393,16 +393,16 @@
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
-    "SHOP": {
-      "price": 139.42,
+    "PLTR": {
+      "price": 156.67,
       "score": 43,
       "verdictKey": "avoid",
       "dipKey": "falling_knife",
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
-    "PLTR": {
-      "price": 156.67,
+    "SHOP": {
+      "price": 139.42,
       "score": 43,
       "verdictKey": "avoid",
       "dipKey": "falling_knife",
