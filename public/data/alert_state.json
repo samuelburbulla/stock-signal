@@ -1,17 +1,9 @@
 {
-  "updatedAt": "2026-11-19T22:01:56Z",
+  "updatedAt": "2026-11-20T02:28:06Z",
   "prevSignals": {
     "TSM": {
       "price": 352.09,
       "score": 93,
-      "verdictKey": "strong_buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "cheap",
-      "isFallingKnife": false
-    },
-    "META": {
-      "price": 596.22,
-      "score": 89,
       "verdictKey": "strong_buy",
       "dipKey": "prime_dip",
       "valuationZone": "cheap",
@@ -46,6 +38,14 @@
       "score": 88,
       "verdictKey": "strong_buy",
       "dipKey": "prime_dip",
+      "valuationZone": "cheap",
+      "isFallingKnife": false
+    },
+    "META": {
+      "price": 596.22,
+      "score": 86,
+      "verdictKey": "strong_buy",
+      "dipKey": "pullback",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
@@ -139,8 +139,8 @@
     },
     "ABBV": {
       "price": 283.54,
-      "score": 78,
-      "verdictKey": "strong_buy",
+      "score": 77,
+      "verdictKey": "buy",
       "dipKey": "pullback",
       "valuationZone": "fair",
       "isFallingKnife": false
@@ -185,14 +185,6 @@
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "UBER": {
-      "price": 65.6,
-      "score": 74,
-      "verdictKey": "buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "cheap",
-      "isFallingKnife": false
-    },
     "LLY": {
       "price": 1351.12,
       "score": 74,
@@ -215,6 +207,14 @@
       "verdictKey": "buy",
       "dipKey": "prime_dip",
       "valuationZone": "fair",
+      "isFallingKnife": false
+    },
+    "UBER": {
+      "price": 65.6,
+      "score": 71,
+      "verdictKey": "buy",
+      "dipKey": "pullback",
+      "valuationZone": "cheap",
       "isFallingKnife": false
     },
     "DIS": {
@@ -339,7 +339,7 @@
     },
     "AAPL": {
       "price": 349.21,
-      "score": 55,
+      "score": 56,
       "verdictKey": "hold",
       "dipKey": "neutral",
       "valuationZone": "expensive",
@@ -379,7 +379,7 @@
     },
     "SPOT": {
       "price": 583.85,
-      "score": 53,
+      "score": 52,
       "verdictKey": "hold",
       "dipKey": "pullback",
       "valuationZone": "expensive",
