@@ -1,25 +1,9 @@
 {
-  "updatedAt": "2026-11-24T23:25:44Z",
+  "updatedAt": "2026-11-25T04:24:39Z",
   "prevSignals": {
     "TSM": {
       "price": 349.2,
       "score": 90,
-      "verdictKey": "strong_buy",
-      "dipKey": "pullback",
-      "valuationZone": "cheap",
-      "isFallingKnife": false
-    },
-    "GS": {
-      "price": 806.02,
-      "score": 89,
-      "verdictKey": "strong_buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "cheap",
-      "isFallingKnife": false
-    },
-    "AVGO": {
-      "price": 301.08,
-      "score": 88,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
@@ -33,9 +17,9 @@
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "META": {
-      "price": 589.82,
-      "score": 86,
+    "AVGO": {
+      "price": 301.08,
+      "score": 87,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
@@ -43,33 +27,57 @@
     },
     "NFLX": {
       "price": 58.87,
-      "score": 86,
+      "score": 87,
       "verdictKey": "strong_buy",
       "dipKey": "prime_dip",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "ASML": {
-      "price": 1336.06,
+    "META": {
+      "price": 589.82,
       "score": 85,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "ORCL": {
-      "price": 109.5,
-      "score": 85,
+    "XOM": {
+      "price": 158.23,
+      "score": 84,
+      "verdictKey": "strong_buy",
+      "dipKey": "prime_dip",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
+    "ASML": {
+      "price": 1336.06,
+      "score": 83,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
+      "valuationZone": "cheap",
+      "isFallingKnife": false
+    },
+    "GS": {
+      "price": 806.02,
+      "score": 83,
+      "verdictKey": "strong_buy",
+      "dipKey": "prime_dip",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
     "ADBE": {
       "price": 232.08,
-      "score": 84,
+      "score": 82,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
+      "valuationZone": "cheap",
+      "isFallingKnife": false
+    },
+    "MS": {
+      "price": 168.79,
+      "score": 82,
+      "verdictKey": "strong_buy",
+      "dipKey": "prime_dip",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
@@ -81,14 +89,6 @@
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "XOM": {
-      "price": 158.23,
-      "score": 82,
-      "verdictKey": "strong_buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
     "TMUS": {
       "price": 167.3,
       "score": 81,
@@ -97,17 +97,9 @@
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "MS": {
-      "price": 168.79,
-      "score": 81,
-      "verdictKey": "strong_buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "cheap",
-      "isFallingKnife": false
-    },
-    "BLK": {
-      "price": 1146.03,
-      "score": 81,
+    "ORCL": {
+      "price": 109.5,
+      "score": 80,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
@@ -115,26 +107,18 @@
     },
     "MSFT": {
       "price": 496.13,
-      "score": 80,
+      "score": 79,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "SAP": {
-      "price": 208.75,
+    "UBER": {
+      "price": 64.7,
       "score": 77,
       "verdictKey": "buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
-    "JPM": {
-      "price": 317.1,
-      "score": 77,
-      "verdictKey": "buy",
-      "dipKey": "prime_dip",
-      "valuationZone": "fair",
+      "dipKey": "pullback",
+      "valuationZone": "cheap",
       "isFallingKnife": false
     },
     "AXP": {
@@ -145,52 +129,52 @@
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "BAC": {
-      "price": 48.56,
-      "score": 76,
-      "verdictKey": "buy",
-      "dipKey": "pullback",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
     "GOOGL": {
       "price": 279.05,
-      "score": 75,
+      "score": 76,
       "verdictKey": "buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "ABBV": {
-      "price": 300.28,
-      "score": 73,
-      "verdictKey": "buy",
-      "dipKey": "neutral",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
-    "UNH": {
-      "price": 341.88,
-      "score": 73,
+    "JPM": {
+      "price": 317.1,
+      "score": 76,
       "verdictKey": "buy",
       "dipKey": "prime_dip",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "LLY": {
-      "price": 1407.59,
-      "score": 72,
-      "verdictKey": "buy",
-      "dipKey": "neutral",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
-    "UBER": {
-      "price": 64.7,
-      "score": 71,
+    "BLK": {
+      "price": 1146.03,
+      "score": 76,
       "verdictKey": "buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
+      "isFallingKnife": false
+    },
+    "SAP": {
+      "price": 208.75,
+      "score": 75,
+      "verdictKey": "buy",
+      "dipKey": "prime_dip",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
+    "DIS": {
+      "price": 122.51,
+      "score": 74,
+      "verdictKey": "buy",
+      "dipKey": "neutral",
+      "valuationZone": "cheap",
+      "isFallingKnife": false
+    },
+    "BAC": {
+      "price": 48.56,
+      "score": 72,
+      "verdictKey": "buy",
+      "dipKey": "pullback",
+      "valuationZone": "fair",
       "isFallingKnife": false
     },
     "V": {
@@ -201,24 +185,24 @@
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "SPGI": {
-      "price": 455.17,
-      "score": 70,
+    "LLY": {
+      "price": 1407.59,
+      "score": 71,
       "verdictKey": "buy",
-      "dipKey": "pullback",
+      "dipKey": "neutral",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "DIS": {
-      "price": 122.51,
-      "score": 69,
+    "NVO": {
+      "price": 40.31,
+      "score": 71,
       "verdictKey": "buy",
       "dipKey": "neutral",
-      "valuationZone": "cheap",
+      "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "MRK": {
-      "price": 141.57,
+    "SPGI": {
+      "price": 455.17,
       "score": 68,
       "verdictKey": "buy",
       "dipKey": "pullback",
@@ -233,18 +217,26 @@
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "NVO": {
-      "price": 40.31,
-      "score": 65,
+    "ABBV": {
+      "price": 300.28,
+      "score": 67,
       "verdictKey": "buy",
       "dipKey": "neutral",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
+    "MRK": {
+      "price": 141.57,
+      "score": 67,
+      "verdictKey": "buy",
+      "dipKey": "pullback",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
     "AMZN": {
       "price": 252.29,
-      "score": 64,
-      "verdictKey": "hold",
+      "score": 65,
+      "verdictKey": "buy",
       "dipKey": "pullback",
       "valuationZone": "fair",
       "isFallingKnife": false
@@ -257,11 +249,11 @@
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "PEP": {
-      "price": 142.68,
-      "score": 63,
+    "UNH": {
+      "price": 341.88,
+      "score": 64,
       "verdictKey": "hold",
-      "dipKey": "neutral",
+      "dipKey": "pullback",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
@@ -283,7 +275,15 @@
     },
     "MCD": {
       "price": 280.7,
-      "score": 61,
+      "score": 60,
+      "verdictKey": "hold",
+      "dipKey": "neutral",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
+    "PEP": {
+      "price": 142.68,
+      "score": 60,
       "verdictKey": "hold",
       "dipKey": "neutral",
       "valuationZone": "fair",
@@ -291,19 +291,11 @@
     },
     "ISRG": {
       "price": 434.46,
-      "score": 61,
+      "score": 60,
       "verdictKey": "hold",
       "dipKey": "pullback",
       "valuationZone": "expensive",
       "isFallingKnife": false
-    },
-    "AMD": {
-      "price": 413.27,
-      "score": 57,
-      "verdictKey": "hold",
-      "dipKey": "falling_knife",
-      "valuationZone": "cheap",
-      "isFallingKnife": true
     },
     "NOW": {
       "price": 91.74,
@@ -321,6 +313,14 @@
       "valuationZone": "fair",
       "isFallingKnife": true
     },
+    "BRK-B": {
+      "price": 577.21,
+      "score": 57,
+      "verdictKey": "hold",
+      "dipKey": "neutral",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
     "CAT": {
       "price": 540.63,
       "score": 57,
@@ -328,14 +328,6 @@
       "dipKey": "falling_knife",
       "valuationZone": "cheap",
       "isFallingKnife": true
-    },
-    "AAPL": {
-      "price": 354.07,
-      "score": 55,
-      "verdictKey": "hold",
-      "dipKey": "neutral",
-      "valuationZone": "expensive",
-      "isFallingKnife": false
     },
     "NVDA": {
       "price": 155.38,
@@ -347,6 +339,22 @@
     },
     "KO": {
       "price": 97.62,
+      "score": 55,
+      "verdictKey": "hold",
+      "dipKey": "neutral",
+      "valuationZone": "expensive",
+      "isFallingKnife": false
+    },
+    "AAPL": {
+      "price": 354.07,
+      "score": 54,
+      "verdictKey": "hold",
+      "dipKey": "neutral",
+      "valuationZone": "expensive",
+      "isFallingKnife": false
+    },
+    "SPOT": {
+      "price": 599.74,
       "score": 54,
       "verdictKey": "hold",
       "dipKey": "neutral",
@@ -355,31 +363,7 @@
     },
     "HD": {
       "price": 353.69,
-      "score": 53,
-      "verdictKey": "hold",
-      "dipKey": "neutral",
-      "valuationZone": "expensive",
-      "isFallingKnife": false
-    },
-    "SPOT": {
-      "price": 599.74,
-      "score": 52,
-      "verdictKey": "hold",
-      "dipKey": "neutral",
-      "valuationZone": "expensive",
-      "isFallingKnife": false
-    },
-    "BRK-B": {
-      "price": 577.21,
-      "score": 52,
-      "verdictKey": "hold",
-      "dipKey": "neutral",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
-    "JNJ": {
-      "price": 276.46,
-      "score": 51,
+      "score": 50,
       "verdictKey": "hold",
       "dipKey": "neutral",
       "valuationZone": "expensive",
@@ -409,8 +393,24 @@
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
+    "COST": {
+      "price": 1091.71,
+      "score": 43,
+      "verdictKey": "avoid",
+      "dipKey": "neutral",
+      "valuationZone": "expensive",
+      "isFallingKnife": false
+    },
     "SBUX": {
       "price": 106.38,
+      "score": 43,
+      "verdictKey": "avoid",
+      "dipKey": "neutral",
+      "valuationZone": "expensive",
+      "isFallingKnife": false
+    },
+    "JNJ": {
+      "price": 276.46,
       "score": 43,
       "verdictKey": "avoid",
       "dipKey": "neutral",
@@ -425,13 +425,13 @@
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
-    "COST": {
-      "price": 1091.71,
-      "score": 42,
+    "AMD": {
+      "price": 413.27,
+      "score": 41,
       "verdictKey": "avoid",
-      "dipKey": "neutral",
-      "valuationZone": "expensive",
-      "isFallingKnife": false
+      "dipKey": "falling_knife",
+      "valuationZone": "cheap",
+      "isFallingKnife": true
     },
     "INTC": {
       "price": 54.8,
@@ -441,9 +441,17 @@
       "valuationZone": "expensive",
       "isFallingKnife": true
     },
+    "WMT": {
+      "price": 132.31,
+      "score": 39,
+      "verdictKey": "avoid",
+      "dipKey": "overheated",
+      "valuationZone": "expensive",
+      "isFallingKnife": false
+    },
     "NKE": {
       "price": 35.75,
-      "score": 40,
+      "score": 39,
       "verdictKey": "avoid",
       "dipKey": "neutral",
       "valuationZone": "expensive",
@@ -454,14 +462,6 @@
       "score": 39,
       "verdictKey": "avoid",
       "dipKey": "neutral",
-      "valuationZone": "expensive",
-      "isFallingKnife": false
-    },
-    "WMT": {
-      "price": 132.31,
-      "score": 37,
-      "verdictKey": "avoid",
-      "dipKey": "overheated",
       "valuationZone": "expensive",
       "isFallingKnife": false
     }
