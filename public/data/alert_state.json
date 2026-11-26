@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T23:00:01Z",
+  "updatedAt": "2026-11-26T03:41:32Z",
   "prevSignals": {
     "TSM": {
       "price": 342.34,
@@ -17,16 +17,16 @@
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "CRM": {
-      "price": 197.21,
-      "score": 85,
+    "META": {
+      "price": 609.89,
+      "score": 84,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "META": {
-      "price": 609.89,
+    "CRM": {
+      "price": 197.21,
       "score": 84,
       "verdictKey": "strong_buy",
       "dipKey": "pullback",
@@ -281,16 +281,16 @@
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
-    "PEP": {
-      "price": 143.93,
-      "score": 60,
+    "MCD": {
+      "price": 283.5,
+      "score": 59,
       "verdictKey": "hold",
       "dipKey": "neutral",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
-    "MCD": {
-      "price": 283.5,
+    "PEP": {
+      "price": 143.93,
       "score": 59,
       "verdictKey": "hold",
       "dipKey": "neutral",
@@ -377,16 +377,16 @@
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
-    "SHOP": {
-      "price": 133.4,
+    "PLTR": {
+      "price": 163.59,
       "score": 43,
       "verdictKey": "avoid",
       "dipKey": "neutral",
       "valuationZone": "expensive",
       "isFallingKnife": false
     },
-    "PLTR": {
-      "price": 163.59,
+    "SHOP": {
+      "price": 133.4,
       "score": 43,
       "verdictKey": "avoid",
       "dipKey": "neutral",
