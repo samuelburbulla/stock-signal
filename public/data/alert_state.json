@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T03:41:32Z",
+  "updatedAt": "2026-11-26T22:53:34Z",
   "prevSignals": {
     "TSM": {
       "price": 342.34,
@@ -161,14 +161,6 @@
       "valuationZone": "cheap",
       "isFallingKnife": false
     },
-    "SAP": {
-      "price": 209.37,
-      "score": 72,
-      "verdictKey": "buy",
-      "dipKey": "pullback",
-      "valuationZone": "fair",
-      "isFallingKnife": false
-    },
     "BAC": {
       "price": 48.54,
       "score": 72,
@@ -182,6 +174,14 @@
       "score": 72,
       "verdictKey": "buy",
       "dipKey": "neutral",
+      "valuationZone": "fair",
+      "isFallingKnife": false
+    },
+    "SAP": {
+      "price": 209.37,
+      "score": 71,
+      "verdictKey": "buy",
+      "dipKey": "pullback",
       "valuationZone": "fair",
       "isFallingKnife": false
     },
@@ -363,7 +363,7 @@
     },
     "HD": {
       "price": 361.26,
-      "score": 49,
+      "score": 48,
       "verdictKey": "hold",
       "dipKey": "neutral",
       "valuationZone": "expensive",
