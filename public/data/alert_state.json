@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T22:53:34Z",
+  "updatedAt": "2026-11-27T03:41:42Z",
   "prevSignals": {
     "TSM": {
       "price": 342.34,
@@ -363,7 +363,7 @@
     },
     "HD": {
       "price": 361.26,
-      "score": 48,
+      "score": 49,
       "verdictKey": "hold",
       "dipKey": "neutral",
       "valuationZone": "expensive",
